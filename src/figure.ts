@@ -92,11 +92,32 @@ export class Figura {
     clone.ticksParaFijar = this.ticksParaFijar;
     return clone;
   }
-  rotar(direccion:): void {
-    this.rotacion = ((this.rotacion + 1) % 4) as Rotation;
+
+  rotate90(figura: FormaFigura): FormaFigura {
+    const rows = figura.forma.length;
+    const cols = figura.forma[0].length;
+
+    // Crear una nueva matriz para almacenar la rotación
+    const rotated = new Array(cols).fill(0).map(() => new Array(rows).fill(0));
+
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        rotated[j][rows - 1 - i] = figura.forma[i][j];
+      }
+    }
+
+    return { nombre: figura.nombre, forma: rotated };
   }
-  mover(direccion: "left" | "right" | "down"): void {
-    switch (direccion) {
+
+  rotar(direction: 1 | -1): void {
+    direction === 1
+      ? (this.forma = this.rotate90(this.forma))
+      : (this.forma = this.rotate90(this.rotate90(this.forma)));
+    this.rotacion = ((this.rotacion + direction) % 4) as Rotation;
+  }
+
+  mover(direction: "left" | "right" | "down"): void {
+    switch (direction) {
       case "left":
         this.posicion.x--;
         break;
