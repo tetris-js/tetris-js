@@ -2,7 +2,14 @@ import { Tablero } from "./board";
 import { Figura } from "./figure";
 
 export class Game {
-  constructor(public tablero: Tablero) {}
+  render: () => void;
+
+  constructor(public tablero: Tablero, renderOutput: "console" | "web") {
+    this.render = {
+      console: this.renderToConsole,
+      web: this.renderToWeb,
+    }[renderOutput];
+  }
 
   tick() {
     if (this.tablero.isPerdido()) {
@@ -21,6 +28,24 @@ export class Game {
   }
 
   start() {
-    setInterval(() => this.tick(), 100);
+    setInterval(() => {
+      this.tick();
+      this.render();
+    }, 100);
+  }
+
+  renderToWeb() {
+    // TODO: implement
+  }
+
+  renderToConsole() {
+    const frame = this.tablero.celdas
+      .map((fila) => {
+        const row = fila.map((celda) => (celda.ocupada ? "X" : " ")).join("");
+        return row;
+      })
+      .join("\n");
+    console.clear();
+    console.log(frame);
   }
 }
