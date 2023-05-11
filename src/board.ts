@@ -1,20 +1,24 @@
-import { Celda } from "./cell";
-import { Figura } from "./figure";
+import { Celda } from './cell'
+import { Figura } from './figure'
 
 export class Tablero {
   constructor(
     public altura: number,
     public anchura: number,
     public celdas: Celda[][] = [],
-    public figura: Figura | null = null
-  ) {}
+    public figura: Figura | null = null,
+  ) {
+    this.celdas = Array.from({ length: altura }, () =>
+      Array.from({ length: anchura }, () => new Celda(false)),
+    )
+  }
 
   doGravity(): void {
-    if (!this.figura) return;
-    const newPos = this.figura.clone();
-    newPos.mover("down");
+    if (!this.figura) return
+    const newPos = this.figura.clone()
+    newPos.mover('down')
     if (this.figura.canMover(newPos)) {
-      this.figura.mover("down");
+      this.figura.mover('down')
     }
   }
 
@@ -35,6 +39,6 @@ export class Tablero {
   isPerdido(): boolean {
     // TODO: implement
     // comprobar si la figura se ha fijado en la parte superior del tablero
-    return false;
+    return false
   }
 }
