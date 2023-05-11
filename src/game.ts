@@ -1,10 +1,10 @@
-import { Tablero } from './board'
-import { Figura } from './figure'
+import { Board } from './board'
+import { Figure } from './figure'
 
 export class Game {
   render: () => void
 
-  constructor(public tablero: Tablero, renderOutput: 'console' | 'web') {
+  constructor(public board: Board, renderOutput: 'console' | 'web') {
     this.render = {
       console: this.renderToConsole,
       web: this.renderToWeb,
@@ -12,19 +12,19 @@ export class Game {
   }
 
   tick() {
-    if (this.tablero.isPerdido()) {
+    if (this.board.hasLost()) {
       alert('Has perdido')
       return
     }
-    this.tablero.doGravity()
-    this.tablero.updateCeldas()
-    this.tablero.fijar()
-    this.tablero.eliminarLineasCompletas()
-    if (!this.tablero.figura) this.crearFigura()
+    this.board.doGravity()
+    this.board.updateCells()
+    this.board.fixFigures()
+    this.board.removeCompletedLines()
+    if (!this.board.figure) this.crearFigura()
   }
 
   crearFigura(): void {
-    this.tablero.figura = new Figura({ x: 0, y: 0 })
+    this.board.figure = new Figure({ x: 0, y: 0 })
   }
 
   start() {
@@ -39,7 +39,7 @@ export class Game {
   }
 
   renderToConsole() {
-    const frame = this.tablero.celdas
+    const frame = this.board.cells
       .map((fila) => {
         const row = fila.map((celda) => (celda.ocupada ? 'X' : '.')).join('')
         return row
@@ -47,6 +47,6 @@ export class Game {
       .join('\n')
     console.clear()
     console.log(frame)
-    console.log(this.tablero.figura)
+    console.log(this.board.figure)
   }
 }

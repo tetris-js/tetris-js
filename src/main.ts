@@ -1,11 +1,11 @@
-import { Tablero } from './board.ts'
+import { Board } from './board.ts'
 import { setupCounter } from './counter.ts'
 import { Game } from './game.ts'
 import './style.css'
 import typescriptLogo from './typescript.svg'
 import viteLogo from '/vite.svg'
 
-new Game(new Tablero(20, 10), 'console').start()
+new Game(new Board(20, 10), 'console').start()
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>

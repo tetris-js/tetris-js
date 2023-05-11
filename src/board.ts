@@ -1,42 +1,42 @@
-import { Celda } from './cell'
-import { Figura } from './figure'
+import { Cell } from './cell'
+import { Figure } from './figure'
 
-export class Tablero {
+export class Board {
   constructor(
-    public altura: number,
-    public anchura: number,
-    public celdas: Celda[][] = [],
-    public figura: Figura | null = null,
+    public height: number,
+    public width: number,
+    public cells: Cell[][] = [],
+    public figure: Figure | null = null,
   ) {
-    this.celdas = Array.from({ length: altura }, () =>
-      Array.from({ length: anchura }, () => new Celda(false)),
+    this.cells = Array.from({ length: height }, () =>
+      Array.from({ length: width }, () => new Cell(false)),
     )
   }
 
   doGravity(): void {
-    if (!this.figura) return
-    const newPos = this.figura.clone()
+    if (!this.figure) return
+    const newPos = this.figure.clone()
     newPos.mover('down')
-    if (this.figura.canMover(newPos)) {
-      this.figura.mover('down')
+    if (this.figure.canMover(newPos)) {
+      this.figure.mover('down')
     }
   }
 
-  updateCeldas(): void {
+  updateCells(): void {
     // TODO: implement
     // actualizar el estado de las celdas en función de la figura
   }
 
-  fijar(): void {
+  fixFigures(): void {
     // TODO: implement
   }
 
-  eliminarLineasCompletas(): void {
+  removeCompletedLines(): void {
     // TODO: implement
     // bajar las lineas superiores
     // optimizacion: comprobar solo las lineas donde se ha fijado la figura
   }
-  isPerdido(): boolean {
+  hasLost(): boolean {
     // TODO: implement
     // comprobar si la figura se ha fijado en la parte superior del tablero
     return false

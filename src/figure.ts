@@ -1,139 +1,131 @@
-import { Celda, Color, getRandomColor } from "./cell";
+import { Cell, Color, getRandomColor } from './cell'
 
-type nombreFigura = "T" | "I" | "S" | "Z" | "O" | "J" | "L";
+type figureName = 'T' | 'I' | 'S' | 'Z' | 'O' | 'J' | 'L'
 
-class FormaFigura {
-  public forma: Celda[][];
+class Shape {
+  public shape: Cell[][]
 
-  constructor(public nombre: nombreFigura, formaNumbers: number[][]) {
-    this.forma = formaNumbers.map((fila) =>
-      fila.map((celda) => new Celda(celda === 1, getRandomColor()))
-    );
+  constructor(public name: figureName, shapeNumbers: number[][]) {
+    this.shape = shapeNumbers.map((fila) =>
+      fila.map((celda) => new Cell(celda === 1, getRandomColor())),
+    )
   }
 }
 
-const formaFiguraT = new FormaFigura("T", [
+const shapeT = new Shape('T', [
   [1, 1, 1],
   [0, 1, 0],
-]);
-const formaFiguraI = new FormaFigura("I", [[1], [1], [1], [1]]);
-const formaFiguraS = new FormaFigura("S", [
+])
+const shapeI = new Shape('I', [[1], [1], [1], [1]])
+const shapeS = new Shape('S', [
   [0, 1, 1],
   [1, 1, 0],
-]);
-const formaFiguraZ = new FormaFigura("Z", [
+])
+const shapeZ = new Shape('Z', [
   [1, 1, 0],
   [0, 1, 1],
-]);
-const formaFiguraO = new FormaFigura("O", [
+])
+const shapeO = new Shape('O', [
   [1, 1],
   [1, 1],
-]);
-const formaFiguraJ = new FormaFigura("J", [
+])
+const shapeJ = new Shape('J', [
   [0, 1],
   [0, 1],
   [1, 1],
-]);
-const formaFiguraL = new FormaFigura("L", [
+])
+const shapeL = new Shape('L', [
   [1, 0],
   [1, 0],
   [1, 1],
-]);
+])
 
-const getRandomFormaFigura = (): FormaFigura => {
-  const formas = [
-    formaFiguraT,
-    formaFiguraI,
-    formaFiguraS,
-    formaFiguraZ,
-    formaFiguraO,
-    formaFiguraJ,
-    formaFiguraL,
-  ];
-  return formas[Math.floor(Math.random() * formas.length)];
-};
+const getRandomShape = (): Shape => {
+  const shapes = [shapeT, shapeI, shapeS, shapeZ, shapeO, shapeJ, shapeL]
+  return shapes[Math.floor(Math.random() * shapes.length)]
+}
 
-type Rotation = 0 | 1 | 2 | 3;
+type Rotation = 0 | 1 | 2 | 3
 
-export class Figura {
-  private forma: FormaFigura;
-  public color: Color;
-  public ticksParaFijar: number | null = null;
+export class Figure {
+  private shape: Shape
+  public color: Color
+  public ticksParaFijar: number | null = null
 
   constructor(
-    public posicion: { x: number; y: number },
-    public rotacion: Rotation = 0,
-    formaArg?: FormaFigura,
-    colorArg?: Color
+    public position: { x: number; y: number },
+    public rotation: Rotation = 0,
+    shapeArg?: Shape,
+    colorArg?: Color,
     // la figura se fija cuando toca el fondo o una celda fijada
     // si deberia fijarse, inicializar ticksParaFijar
     // si ticksParaFijar es 0, fijar la figura
   ) {
-    if (formaArg) {
-      this.forma = formaArg;
+    if (shapeArg) {
+      this.shape = shapeArg
     } else {
-      this.forma = getRandomFormaFigura();
+      this.shape = getRandomShape()
     }
 
     if (colorArg) {
-      this.color = colorArg;
+      this.color = colorArg
     } else {
-      this.color = getRandomColor();
+      this.color = getRandomColor()
     }
   }
 
-  clone(): Figura {
-    const clone = new Figura(
-      this.posicion,
-      this.rotacion,
-      this.forma,
-      this.color
-    );
-    clone.ticksParaFijar = this.ticksParaFijar;
-    return clone;
+  clone(): Figure {
+    const clone = new Figure(
+      this.position,
+      this.rotation,
+      this.shape,
+      this.color,
+    )
+    clone.ticksParaFijar = this.ticksParaFijar
+    return clone
   }
 
-  rotate90(figura: FormaFigura): FormaFigura {
-    const rows = figura.forma.length;
-    const cols = figura.forma[0].length;
+  rotate90(figura: Shape): Shape {
+    const rows = figura.shape.length
+    const cols = figura.shape[0].length
 
     // Crear una nueva matriz para almacenar la rotación
-    const rotated = new Array(cols).fill(0).map(() => new Array(rows).fill(0));
+    const rotated = new Array(cols).fill(0).map(() => new Array(rows).fill(0))
 
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
-        rotated[j][rows - 1 - i] = figura.forma[i][j];
+        rotated[j][rows - 1 - i] = figura.shape[i][j]
       }
     }
 
-    return { nombre: figura.nombre, forma: rotated };
+    return { name: figura.name, shape: rotated }
   }
 
   rotar(direction: 1 | -1): void {
     direction === 1
-      ? (this.forma = this.rotate90(this.forma))
-      : (this.forma = this.rotate90(this.rotate90(this.forma)));
-    this.rotacion = ((this.rotacion + direction) % 4) as Rotation;
+      ? (this.shape = this.rotate90(this.shape))
+      : (this.shape = this.rotate90(this.rotate90(this.shape)))
+    this.rotation = ((this.rotation + direction) % 4) as Rotation
   }
 
-  mover(direction: "left" | "right" | "down"): void {
+  mover(direction: 'left' | 'right' | 'down'): void {
     switch (direction) {
-      case "left":
-        this.posicion.x--;
-        break;
-      case "right":
-        this.posicion.x++;
-        break;
-      case "down":
-        this.posicion.y++;
-        break;
+      case 'left':
+        this.position.x--
+        break
+      case 'right':
+        this.position.x++
+        break
+      case 'down':
+        this.position.y++
+        break
     }
   }
-  canMover(newPosition: Figura): boolean {
+  canMover(newPosition: Figure): boolean {
     // TODO: implement
     // comprobar si el movimiento es solo 1 de distancia
     // comprobar si la nueva posicion esta dentro del tablero
     // comprobar si la nueva posicion no colisiona con ninguna celda fijada
-    return true;
+    return true
   }
 }

@@ -20,6 +20,6 @@ export const getRandomColor = (): Color => {
   return colors[Math.floor(Math.random() * colors.length)]
 }
 
-export class Celda {
+export class Cell {
   constructor(public ocupada: boolean, public color?: Color) {}
 }
