@@ -32,8 +32,8 @@ export class Board {
   }
 
   removeCompletedLines(): void {
-    // TODO: implement
-    // bajar las lineas superiores
+    this.cells.filter(row => !row.every((cell) => cell.ocupada))
+    this.cells.unshift(Array.from({ length: this.width }, () => new Cell(false)))
     // optimizacion: comprobar solo las lineas donde se ha fijado la figura
   }
   hasLost(): boolean {
