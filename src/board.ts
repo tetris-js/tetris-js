@@ -16,9 +16,9 @@ export class Board {
   doGravity(): void {
     if (!this.figure) return
     const newPos = this.figure.clone()
-    newPos.mover('down')
-    if (this.figure.canMover(newPos)) {
-      this.figure.mover('down')
+    newPos.move('down')
+    if (this.figure.canMove(newPos)) {
+      this.figure.move('down')
     }
   }
 

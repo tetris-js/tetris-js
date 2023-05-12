@@ -101,14 +101,14 @@ export class Figure {
     return { name: figura.name, shape: rotated }
   }
 
-  rotar(direction: 1 | -1): void {
+  rotate(direction: 1 | -1): void {
     direction === 1
       ? (this.shape = this.rotate90(this.shape))
       : (this.shape = this.rotate90(this.rotate90(this.shape)))
     this.rotation = ((this.rotation + direction) % 4) as Rotation
   }
 
-  mover(direction: 'left' | 'right' | 'down'): void {
+  move(direction: 'left' | 'right' | 'down'): void {
     switch (direction) {
       case 'left':
         this.position.x--
@@ -121,7 +121,7 @@ export class Figure {
         break
     }
   }
-  canMover(newPosition: Figure): boolean {
+  canMove(newPosition: Figure): boolean {
     // TODO: implement
     // comprobar si el movimiento es solo 1 de distancia
     // comprobar si la nueva posicion esta dentro del tablero
