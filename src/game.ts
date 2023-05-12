@@ -20,10 +20,10 @@ export class Game {
     this.board.updateCells()
     this.board.fixFigures()
     this.board.removeCompletedLines()
-    if (!this.board.figure) this.crearFigura()
+    if (!this.board.figure) this.addNewFigure()
   }
 
-  crearFigura(): void {
+  addNewFigure(): void {
     this.board.figure = new Figure({ x: 0, y: 0 })
   }
 
