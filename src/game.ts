@@ -1,31 +1,81 @@
 import { Board } from './board'
+import { Cell } from './cell'
 import { Figure } from './figure'
 
 export class Game {
-  render: () => void
+  private render: () => void
 
-  constructor(public board: Board, renderOutput: 'console' | 'web') {
+  constructor(
+    private board: Board,
+    private figure: Figure,
+    renderOutput: 'console' | 'web',
+  ) {
     this.render = {
       console: this.renderToConsole,
       web: this.renderToWeb,
     }[renderOutput]
   }
 
-  tick() {
-    if (this.board.hasLost()) {
+  doGravity(): void {
+    if (!this.figure) return
+    const newPos = this.figure.clone()
+    newPos.move('down')
+    if (this.figure.canMove(newPos)) {
+      this.figure.move('down')
+    }
+  }
+
+  updateCells(): void {
+    // TODO: implement
+    // actualizar el estado de las celdas en función de la figura
+  }
+
+  fixFigures(): void {
+    // TODO: implement
+  }
+
+  removeCompletedLines(): void {
+    this.board.cells.filter((row) => !row.every((cell) => cell.ocupada))
+    this.board.cells.unshift(
+      Array.from({ length: this.board.width }, () => new Cell(false)),
+    )
+  }
+  hasLost(): boolean {
+    // TODO: implement
+    // comprobar si la figura se ha fijado en la parte superior del tablero
+    return false
+  }
+
+  private tick() {
+    if (this.hasLost()) {
       alert('Has perdido')
       return
     }
-    this.board.doGravity()
-    this.board.updateCells()
-    this.board.fixFigures()
-    this.board.removeCompletedLines()
-    if (!this.board.figure) this.addNewFigure()
+    this.doGravity()
+    this.updateCells()
+    this.fixFigures()
+    this.removeCompletedLines()
+    if (!this.figure) this.addNewFigure()
   }
 
-  addNewFigure(): void {
-    this.board.figure = new Figure({ x: 0, y: 0 })
+  private addNewFigure(): void {
+    this.figure = new Figure({ x: 0, y: 0 })
   }
+
+  public move(direction: 'left' | 'right' | 'down'): void {}
+  public rotate(direction: 1 | -1): void {}
+
+  // on(
+  //   action: 'move',
+  //   { direction }: { direction: 'left' | 'right' | 'down' },
+  // ): void {
+  //   // TODO: implement
+  //   // comprobar si el movimiento es solo 1 de distancia
+  //   // comprobar si la nueva posicion esta dentro del tablero
+  //   // comprobar si la nueva posicion no colisiona con ninguna celda fijada
+  // }
+
+  // on(action: 'rotate', { direction }: { direction: 1 | -1 }): void {}
 
   start() {
     setInterval(() => {
@@ -34,11 +84,11 @@ export class Game {
     }, 1000)
   }
 
-  renderToWeb() {
+  private renderToWeb(): void {
     // TODO: implement
   }
 
-  renderToConsole() {
+  private renderToConsole(): void {
     const frame = this.board.cells
       .map((fila) => {
         const row = fila.map((celda) => (celda.ocupada ? 'X' : '.')).join('')
@@ -47,6 +97,6 @@ export class Game {
       .join('\n')
     console.clear()
     console.log(frame)
-    console.log(this.board.figure)
+    console.log(this.figure)
   }
 }

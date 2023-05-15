@@ -121,11 +121,4 @@ export class Figure {
         break
     }
   }
-  canMove(newPosition: Figure): boolean {
-    // TODO: implement
-    // comprobar si el movimiento es solo 1 de distancia
-    // comprobar si la nueva posicion esta dentro del tablero
-    // comprobar si la nueva posicion no colisiona con ninguna celda fijada
-    return true
-  }
 }
