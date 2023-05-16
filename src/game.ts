@@ -136,7 +136,7 @@ export class Game {
     setInterval(() => {
       this.tick()
       this.render()
-    }, 1000)
+    }, 500)
   }
 
   private renderToWeb(): void {
