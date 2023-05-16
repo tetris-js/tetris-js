@@ -99,7 +99,11 @@ export class Game {
   }
 
   private addNewFigure(): void {
-    this.figure = new Figure({ x: 0, y: 0 })
+    const figure = new Figure({
+      x: 3 + ((Math.random() * (this.board.cells[0].length - 7)) | 0),
+      y: 0,
+    })
+    this.figure = figure
   }
 
   public move(direction: 'left' | 'right' | 'down'): boolean {
