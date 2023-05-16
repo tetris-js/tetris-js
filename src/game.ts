@@ -3,13 +3,10 @@ import { Cell } from './cell'
 import { Figure } from './figure'
 
 export class Game {
+  private figure: Figure | null = null
   private render: () => void
 
-  constructor(
-    private board: Board,
-    private figure: Figure,
-    renderOutput: 'console' | 'web',
-  ) {
+  constructor(private board: Board, renderOutput: 'console' | 'web') {
     this.render = {
       console: this.renderToConsole,
       web: this.renderToWeb,
@@ -18,32 +15,75 @@ export class Game {
 
   doGravity(): void {
     if (!this.figure) return
-    const newPos = this.figure.clone()
-    newPos.move('down')
-    if (this.figure.canMove(newPos)) {
-      this.figure.move('down')
+    if (!this.move('down')) {
+      this.figure.ticksToFix = this.figure.ticksToFix ?? 5
+    }
+  }
+
+  removeFigureFomBoard(): void {
+    if (!this.figure) return
+    for (let y = 0; y < this.figure.shape.cells.length; y++) {
+      for (let x = 0; x < this.figure.shape.cells[y].length; x++) {
+        const boardCell =
+          this.board.cells[this.figure.position.y + y]?.[
+            this.figure.position.x + x
+          ]
+        if (!boardCell) {
+          console.error('this should never happen')
+          continue
+        }
+        boardCell.occupied = false
+        boardCell.color = undefined
+      }
     }
   }
 
   updateCells(): void {
-    // TODO: implement
-    // actualizar el estado de las celdas en función de la figura
+    if (!this.figure) return
+    for (let y = 0; y < this.figure.shape.cells.length; y++) {
+      for (let x = 0; x < this.figure.shape.cells[y].length; x++) {
+        const cell = this.figure.shape.cells[y][x]
+        const boardCell =
+          this.board.cells[this.figure.position.y + y]?.[
+            this.figure.position.x + x
+          ]
+        if (!boardCell) {
+          console.error('this should never happen')
+          continue
+        }
+        boardCell.occupied = cell.occupied
+        boardCell.color = this.figure.color
+      }
+    }
   }
 
   fixFigures(): void {
-    // TODO: implement
+    if (!this.figure) {
+      console.log(1)
+      return
+    }
+    if (this.figure.ticksToFix === null) {
+      console.log(2)
+      return
+    }
+    if (this.figure.ticksToFix > 0) {
+      this.figure.ticksToFix -= 1
+      return
+    }
+    this.figure = null
   }
 
   removeCompletedLines(): void {
-    this.board.cells.filter((row) => !row.every((cell) => cell.ocupada))
+    // TODO: this is not working now. It's adding new lines to the board
+    return
+    this.board.cells.filter((row) => !row.every((cell) => cell.occupied))
     this.board.cells.unshift(
       Array.from({ length: this.board.width }, () => new Cell(false)),
     )
   }
+
   hasLost(): boolean {
-    // TODO: implement
-    // comprobar si la figura se ha fijado en la parte superior del tablero
-    return false
+    return this.board.cells[0].some((cell) => cell.occupied)
   }
 
   private tick() {
@@ -62,20 +102,31 @@ export class Game {
     this.figure = new Figure({ x: 0, y: 0 })
   }
 
-  public move(direction: 'left' | 'right' | 'down'): void {}
-  public rotate(direction: 1 | -1): void {}
+  public move(direction: 'left' | 'right' | 'down'): boolean {
+    if (!this.figure) return false
+    this.removeFigureFomBoard()
+    const clonedFigure = this.figure!.clone()
+    clonedFigure.move(direction)
+    const collides = this.board.collides(clonedFigure)
+    if (!collides) {
+      this.figure.move(direction)
+    }
+    this.updateCells()
+    return !collides
+  }
 
-  // on(
-  //   action: 'move',
-  //   { direction }: { direction: 'left' | 'right' | 'down' },
-  // ): void {
-  //   // TODO: implement
-  //   // comprobar si el movimiento es solo 1 de distancia
-  //   // comprobar si la nueva posicion esta dentro del tablero
-  //   // comprobar si la nueva posicion no colisiona con ninguna celda fijada
-  // }
-
-  // on(action: 'rotate', { direction }: { direction: 1 | -1 }): void {}
+  public rotate(direction: 1 | -1): boolean {
+    if (!this.figure) return false
+    this.removeFigureFomBoard()
+    const clonedFigure = this.figure!.clone()
+    clonedFigure.rotate(direction)
+    const collides = this.board.collides(clonedFigure)
+    if (!collides) {
+      this.figure.rotate(direction)
+    }
+    this.updateCells()
+    return !collides
+  }
 
   start() {
     setInterval(() => {
@@ -91,7 +142,7 @@ export class Game {
   private renderToConsole(): void {
     const frame = this.board.cells
       .map((fila) => {
-        const row = fila.map((celda) => (celda.ocupada ? 'X' : '.')).join('')
+        const row = fila.map((celda) => (celda.occupied ? 'X' : '.')).join('')
         return row
       })
       .join('\n')

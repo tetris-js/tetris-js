@@ -3,11 +3,14 @@ import { Cell, Color, getRandomColor } from './cell'
 type figureName = 'T' | 'I' | 'S' | 'Z' | 'O' | 'J' | 'L'
 
 class Shape {
-  public shape: Cell[][]
+  public cells: Cell[][]
 
   constructor(public name: figureName, shapeNumbers: number[][]) {
-    this.shape = shapeNumbers.map((fila) =>
-      fila.map((celda) => new Cell(celda === 1, getRandomColor())),
+    const color = getRandomColor()
+    this.cells = shapeNumbers.map((fila) =>
+      fila.map(
+        (celda) => new Cell(celda === 1, celda === 1 ? color : undefined),
+      ),
     )
   }
 }
@@ -48,9 +51,9 @@ const getRandomShape = (): Shape => {
 type Rotation = 0 | 1 | 2 | 3
 
 export class Figure {
-  private shape: Shape
+  public shape: Shape
   public color: Color
-  public ticksParaFijar: number | null = null
+  public ticksToFix: number | null = null
 
   constructor(
     public position: { x: number; y: number },
@@ -76,29 +79,29 @@ export class Figure {
 
   clone(): Figure {
     const clone = new Figure(
-      this.position,
+      { ...this.position },
       this.rotation,
       this.shape,
       this.color,
     )
-    clone.ticksParaFijar = this.ticksParaFijar
+    clone.ticksToFix = this.ticksToFix
     return clone
   }
 
   rotate90(figura: Shape): Shape {
-    const rows = figura.shape.length
-    const cols = figura.shape[0].length
+    const rows = figura.cells.length
+    const cols = figura.cells[0].length
 
     // Crear una nueva matriz para almacenar la rotación
     const rotated = new Array(cols).fill(0).map(() => new Array(rows).fill(0))
 
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
-        rotated[j][rows - 1 - i] = figura.shape[i][j]
+        rotated[j][rows - 1 - i] = figura.cells[i][j]
       }
     }
 
-    return { name: figura.name, shape: rotated }
+    return { name: figura.name, cells: rotated }
   }
 
   rotate(direction: 1 | -1): void {

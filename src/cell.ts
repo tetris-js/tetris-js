@@ -21,5 +21,5 @@ export const getRandomColor = (): Color => {
 }
 
 export class Cell {
-  constructor(public ocupada: boolean, public color?: Color) {}
+  constructor(public occupied: boolean, public color?: Color) {}
 }
