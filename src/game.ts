@@ -1,6 +1,7 @@
 import { Board } from './board'
 import { Cell } from './cell'
 import { Figure } from './figure'
+import { render } from './grid'
 
 export class Game {
   private figure: Figure | null = null
@@ -60,14 +61,8 @@ export class Game {
   }
 
   fixFigures(): void {
-    if (!this.figure) {
-      console.log(1)
-      return
-    }
-    if (this.figure.ticksToFix === null) {
-      console.log(2)
-      return
-    }
+    if (!this.figure) return
+    if (this.figure.ticksToFix === null) return
     if (this.figure.ticksToFix > 0) {
       this.figure.ticksToFix -= 1
       return
@@ -138,14 +133,13 @@ export class Game {
 
   start() {
     setInterval(() => {
-      console.log('tick!')
       this.tick()
       this.render()
     }, 100)
   }
 
   private renderToWeb(): void {
-    // TODO: implement
+    render(this.board)
   }
 
   private renderToConsole(): void {
