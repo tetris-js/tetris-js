@@ -6,6 +6,8 @@ import { render } from './grid'
 export class Game {
   private figure: Figure | null = null
   private render: () => void
+  private clockPeriod: number = 1000
+  private clock: number | null = null
 
   constructor(private board: Board, renderOutput: 'console' | 'web') {
     this.render = {
@@ -135,11 +137,25 @@ export class Game {
     return !collides
   }
 
+  private changeClock(ms: number) {
+    this.clockPeriod = ms
+    if (this.clock) {
+      clearInterval(this.clock)
+      this.start()
+    }
+  }
+
   start() {
-    setInterval(() => {
+    let lastTime = Date.now()
+    this.clock = setInterval(() => {
       this.tick()
       this.render()
-    }, 100)
+      const now = Date.now()
+      const elapsed = now - lastTime
+      if (elapsed > 5000) {
+        this.changeClock(Math.max(this.clockPeriod - 100, 100))
+      }
+    }, this.clockPeriod)
   }
 
   private renderToWeb(): void {
