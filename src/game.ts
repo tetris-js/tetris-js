@@ -71,12 +71,16 @@ export class Game {
   }
 
   removeCompletedLines(): void {
-    // TODO: this is not working now. It's adding new lines to the board
-    return
-    this.board.cells.filter((row) => !row.every((cell) => cell.occupied))
-    this.board.cells.unshift(
+    const rowsToRemove = this.board.cells
+      .map((row, i) => (row.every((cell) => cell.occupied) ? i : null))
+      .filter((i) => i !== null)
+    rowsToRemove.forEach((rowIndex) => {
+      this.board.cells.splice(rowIndex!, 1)
+    })
+    const newLines = Array.from({ length: rowsToRemove.length }, () =>
       Array.from({ length: this.board.width }, () => new Cell(false)),
     )
+    this.board.cells.unshift(...newLines)
   }
 
   hasLost(): boolean {
