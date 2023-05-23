@@ -24,6 +24,7 @@ export class Game {
     if (!this.figure) return
     for (let y = 0; y < this.figure.shape.cells.length; y++) {
       for (let x = 0; x < this.figure.shape.cells[y].length; x++) {
+        if (!this.figure.shape.cells[y][x].occupied) continue
         const boardCell =
           this.board.cells[this.figure.position.y + y]?.[
             this.figure.position.x + x
@@ -43,16 +44,17 @@ export class Game {
     for (let y = 0; y < this.figure.shape.cells.length; y++) {
       for (let x = 0; x < this.figure.shape.cells[y].length; x++) {
         const cell = this.figure.shape.cells[y][x]
-        const boardCell =
-          this.board.cells[this.figure.position.y + y]?.[
-            this.figure.position.x + x
-          ]
+        const boardY = this.figure.position.y + y
+        const boardX = this.figure.position.x + x
+        const boardCell = this.board.cells[boardY]?.[boardX]
         if (!boardCell) {
           console.error('this should never happen')
           continue
         }
-        boardCell.occupied = cell.occupied
-        boardCell.color = this.figure.color
+        if (cell.occupied) {
+          boardCell.occupied = cell.occupied
+          boardCell.color = this.figure.color
+        }
       }
     }
   }
@@ -88,7 +90,9 @@ export class Game {
 
   private tick() {
     if (this.hasLost()) {
-      alert('Has perdido')
+      this.board = new Board(this.board.height, this.board.width)
+      this.figure = null
+      // alert('Has perdido')
       return
     }
     this.doGravity()
@@ -134,9 +138,10 @@ export class Game {
 
   start() {
     setInterval(() => {
+      console.log('tick!')
       this.tick()
       this.render()
-    }, 500)
+    }, 100)
   }
 
   private renderToWeb(): void {
@@ -144,11 +149,13 @@ export class Game {
   }
 
   private renderToConsole(): void {
-    const frame = this.board.cells
-      .map((fila) => {
-        const row = fila.map((celda) => (celda.occupied ? 'X' : '.')).join('')
-        return row
-      })
+    const frame = [`  ${this.board.cells[0].map((_, i) => i).join('')}`]
+      .concat(
+        this.board.cells.map((fila, i) => {
+          const row = fila.map((celda) => (celda.occupied ? 'X' : '.')).join('')
+          return `${i.toString().padStart(2)} ${row}`
+        }),
+      )
       .join('\n')
     console.clear()
     console.log(frame)

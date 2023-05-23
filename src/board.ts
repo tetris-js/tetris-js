@@ -12,7 +12,6 @@ export class Board {
     )
   }
 
-  // TODO: sometimes the collision is not detected well
   public collides(figure: Figure): boolean {
     for (let y = 0; y < figure.shape.cells.length; y++) {
       for (let x = 0; x < figure.shape.cells[y].length; x++) {
