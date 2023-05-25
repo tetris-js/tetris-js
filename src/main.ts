@@ -2,7 +2,10 @@ import { Board } from './board'
 import { Game } from './game'
 import './style.css'
 
-const game = new Game(new Board(100, 200), 'web')
+const game = new Game(new Board(10, 10), 'web')
+game.on('lose', () => {
+  console.log('por tonto')
+})
 game.start()
 document.addEventListener('keydown', (event) => {
   if (event.key === 'ArrowLeft') game.move('left')

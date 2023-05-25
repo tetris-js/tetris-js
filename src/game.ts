@@ -3,12 +3,22 @@ import { Cell } from './cell'
 import { Figure } from './figure'
 import { render } from './grid'
 
+type GameEventname = 'completedLines' | 'lose'
+interface Events {
+  completedLines: Array<(arg: { count: number }) => void>
+  lose: Array<() => void>
+}
+
 export class Game {
   public figure: Figure | null = null
   private render: () => void
   private clockPeriod: number = 300
   private clock: number | null = null
   public score: number = 0
+  private eventCallbacks: Events = {
+    completedLines: [],
+    lose: [],
+  }
 
   constructor(public board: Board, renderOutput: 'console' | 'web') {
     this.render = {
@@ -17,7 +27,11 @@ export class Game {
     }[renderOutput]
   }
 
-  doGravity(): void {
+  public on(name: GameEventname, callback: (...arg: unknown[]) => void): void {
+    this.eventCallbacks[name]!.push(callback)
+  }
+
+  private doGravity(): void {
     if (!this.figure) return
     if (!this.move('down', { isGravity: true })) {
       this.figure.ticksToFix = this.figure.ticksToFix ?? 5
@@ -26,26 +40,7 @@ export class Game {
     }
   }
 
-  removeFigureFomBoard(): void {
-    if (!this.figure) return
-    for (let y = 0; y < this.figure.shape.cells.length; y++) {
-      for (let x = 0; x < this.figure.shape.cells[y].length; x++) {
-        if (!this.figure.shape.cells[y][x].occupied) continue
-        const boardCell =
-          this.board.cells[this.figure.position.y + y]?.[
-            this.figure.position.x + x
-          ]
-        if (!boardCell) {
-          console.error('this should never happen')
-          continue
-        }
-        boardCell.occupied = false
-        boardCell.color = undefined
-      }
-    }
-  }
-
-  fixFigures(): boolean {
+  private fixFigures(): boolean {
     if (!this.figure) return false
 
     if (this.figure.ticksToFix === null) return false
@@ -73,7 +68,7 @@ export class Game {
     return true
   }
 
-  removeCompletedLines(): number {
+  private removeCompletedLines(): number {
     const rowsToRemove = this.board.cells
       .map((row, i) => (row.every((cell) => cell.occupied) ? i : null))
       .filter((i) => i !== null)
@@ -86,18 +81,21 @@ export class Game {
       Array.from({ length: this.board.width }, () => new Cell(false)),
     )
     this.board.cells.unshift(...newLines)
+    this.eventCallbacks.completedLines?.forEach((callback) =>
+      callback({ count }),
+    )
     return count
   }
 
-  hasLost(): boolean {
+  public get hasLost(): boolean {
     return this.board.cells[0].some((cell) => cell.occupied)
   }
 
   private tick() {
-    if (this.hasLost()) {
+    if (this.hasLost) {
+      this.eventCallbacks.lose?.forEach((callback) => callback())
       this.board = new Board(this.board.height, this.board.width)
       this.figure = null
-      alert('Has perdido')
       return
     }
     this.doGravity()
@@ -126,7 +124,6 @@ export class Game {
     { isGravity }: { isGravity: boolean } = { isGravity: false },
   ): boolean {
     if (!this.figure) return false
-    this.removeFigureFomBoard()
     const clonedFigure = this.figure!.clone()
     clonedFigure.move(direction)
     const collides = this.board.collides(clonedFigure)
@@ -141,7 +138,6 @@ export class Game {
 
   public rotate(direction: 1 | -1): boolean {
     if (!this.figure) return false
-    this.removeFigureFomBoard()
     const clonedFigure = this.figure!.clone()
     clonedFigure.rotate(direction)
     const collides = this.board.collides(clonedFigure)
@@ -149,11 +145,6 @@ export class Game {
       this.figure.rotate(direction)
     }
     return !collides
-  }
-
-  dotick() {
-    this.tick()
-    this.render()
   }
 
   get isPaused(): boolean {
@@ -184,7 +175,7 @@ export class Game {
     }, this.clockPeriod)
   }
 
-  start() {
+  public start() {
     setInterval(() => {
       this.render()
     }, 10)
