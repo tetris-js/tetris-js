@@ -2,7 +2,7 @@ import { Board } from './board'
 import { Game } from './game'
 import './style.css'
 
-const game = new Game(new Board(20, 10), 'web')
+const game = new Game(new Board(100, 200), 'web')
 game.start()
 document.addEventListener('keydown', (event) => {
   if (event.key === 'ArrowLeft') game.move('left')
@@ -10,4 +10,8 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'ArrowDown') game.move('down')
   if (event.key === 'ArrowUp') game.rotate(1)
   if (event.key === 't') game.dotick.bind(game)()
+  if (event.key === 'Escape') {
+    if (game.isPaused) game.resume()
+    else game.pause()
+  }
 })

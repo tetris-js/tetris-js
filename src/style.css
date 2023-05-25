@@ -16,8 +16,6 @@
 
 #grid {
   display: grid;
-  grid-template-columns: repeat(10, 1rem);
-  grid-template-rows: repeat(20, 1rem);
   gap: 2px;
 }
 

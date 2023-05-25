@@ -6,10 +6,9 @@ import { render } from './grid'
 export class Game {
   public figure: Figure | null = null
   private render: () => void
-  private clockPeriod: number = 1000
+  private clockPeriod: number = 300
   private clock: number | null = null
-  public score: number = 9
-  
+  public score: number = 0
 
   constructor(public board: Board, renderOutput: 'console' | 'web') {
     this.render = {
@@ -20,9 +19,9 @@ export class Game {
 
   doGravity(): void {
     if (!this.figure) return
-    if (!this.move('down')) {
+    if (!this.move('down', { isGravity: true })) {
       this.figure.ticksToFix = this.figure.ticksToFix ?? 5
-    } else{
+    } else {
       this.figure.ticksToFix = null
     }
   }
@@ -57,17 +56,16 @@ export class Game {
 
     for (let y = 0; y < this.figure.shape.cells.length; y++) {
       for (let x = 0; x < this.figure.shape.cells[y].length; x++) {
-
         const cell = this.figure.shape.cells[y][x]
 
-        if(!cell.occupied) continue
-        
+        if (!cell.occupied) continue
+
         const boardY = this.figure.position.y + y
         const boardX = this.figure.position.x + x
 
         this.board.cells[boardY][boardX].occupied = true
-    
-    this.board.cells[boardY][boardX].color = this.figure.color
+
+        this.board.cells[boardY][boardX].color = this.figure.color
       }
     }
 
@@ -103,13 +101,13 @@ export class Game {
       return
     }
     this.doGravity()
-    
+
     const fixed = this.fixFigures()
     if (fixed) {
       let completedLines = this.removeCompletedLines()
-      if (completedLines > 0){
+      if (completedLines > 0) {
         const scores = [10, 25, 45, 70]
-        this.score += scores[completedLines-1]
+        this.score += scores[completedLines - 1]
       }
     }
     if (!this.figure) this.addNewFigure()
@@ -123,7 +121,10 @@ export class Game {
     this.figure = figure
   }
 
-  public move(direction: 'left' | 'right' | 'down'): boolean {
+  public move(
+    direction: 'left' | 'right' | 'down',
+    { isGravity }: { isGravity: boolean } = { isGravity: false },
+  ): boolean {
     if (!this.figure) return false
     this.removeFigureFomBoard()
     const clonedFigure = this.figure!.clone()
@@ -131,6 +132,9 @@ export class Game {
     const collides = this.board.collides(clonedFigure)
     if (!collides) {
       this.figure.move(direction)
+      if (direction === 'down' && !isGravity) {
+        this.score += 1
+      }
     }
     return !collides
   }
@@ -152,8 +156,32 @@ export class Game {
     this.render()
   }
 
+  get isPaused(): boolean {
+    return this.clock === null
+  }
+
   public pause() {
-    this.clock && clearInterval(this.clock)
+    if (this.clock) {
+      clearInterval(this.clock)
+      this.clock = null
+    }
+  }
+
+  public resume() {
+    // let lastTime = Date.now()
+    let lastScore = this.score
+    this.clock = setInterval(() => {
+      console.log('tick')
+      this.tick()
+      // const now = Date.now()
+      // const elapsed = now - lastTime
+      if (this.score % 100 === 0 && this.score !== lastScore) {
+        this.clockPeriod = Math.max(this.clockPeriod - 50, 50)
+        this.pause()
+        this.resume()
+        lastScore = this.score
+      }
+    }, this.clockPeriod)
   }
 
   start() {
@@ -161,20 +189,7 @@ export class Game {
       this.render()
     }, 10)
 
-    let lastTime = Date.now()
-    const run = () => {
-      this.clock = setInterval(() => {
-        this.tick()
-        const now = Date.now()
-        const elapsed = now - lastTime
-        if (elapsed > 5000) {
-          this.clockPeriod = Math.max(this.clockPeriod - 100, 100)
-          this.pause()
-          run()
-        }
-      }, this.clockPeriod)
-    }
-    run()
+    this.resume()
   }
 
   private renderToWeb(): void {
