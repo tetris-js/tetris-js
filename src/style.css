@@ -46,3 +46,7 @@
 #grid > .cell.occupied.white {
   background-color: white;
 }
+
+#grid > .cell.figure {
+  border: 1px solid fuchsia;
+}

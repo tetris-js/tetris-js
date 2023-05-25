@@ -1,7 +1,9 @@
-import { Board } from './board'
+import { Game } from './game'
 
-export const render = (board: Board) => {
+export const render = (game: Game) => {
   const grid = document.getElementById('grid')!
+  const board = game.board
+  const figure = game.figure
   if (grid.children.length === 0) {
     for (let i = 0; i < 200; i++) {
       const cell = document.createElement('div')
@@ -9,18 +11,39 @@ export const render = (board: Board) => {
       grid.appendChild(cell)
     }
   }
-  board.cells.forEach((row, y) => {
-    row.forEach((cell, x) => {
-      const cellElement = grid.children[y * board.width + x]
-      cellElement.classList.toggle('occupied', cell.occupied)
-      cellElement.classList.remove('red')
-      cellElement.classList.remove('blue')
-      cellElement.classList.remove('green')
-      cellElement.classList.remove('yellow')
-      cellElement.classList.remove('purple')
-      cellElement.classList.remove('orange')
-      cellElement.classList.remove('white')
-      cell.color && cellElement.classList.toggle(cell.color, cell.occupied)
+
+  let virtualBoard: Array<string | undefined> = []
+
+  board.cells.forEach((row) => {
+    row.forEach((cell) => {
+      virtualBoard.push(cell.color)
     })
   })
+  
+  if (figure){
+    for (let y = 0; y < figure.shape.cells.length; y++) {
+      for (let x = 0; x < figure.shape.cells[y].length; x++) {
+
+        const cell = figure.shape.cells[y][x]
+
+        if(!cell.occupied) continue
+        
+        const boardY = figure.position.y + y
+        const boardX = figure.position.x + x
+
+        virtualBoard[boardY * board.width + boardX] = figure.color
+        
+      }
+    }
+  }
+  
+  virtualBoard.forEach((color, i)=>{
+    if(color === undefined){
+      grid.children[i].classList.value = "cell"
+      return
+    }
+    grid.children[i].classList.value = "cell occupied "+color
+  })
+
+  document.getElementById("points")!.innerHTML = game.score.toString()
 }

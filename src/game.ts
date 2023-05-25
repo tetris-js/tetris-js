@@ -4,12 +4,14 @@ import { Figure } from './figure'
 import { render } from './grid'
 
 export class Game {
-  private figure: Figure | null = null
+  public figure: Figure | null = null
   private render: () => void
   private clockPeriod: number = 1000
   private clock: number | null = null
+  public score: number = 9
+  
 
-  constructor(private board: Board, renderOutput: 'console' | 'web') {
+  constructor(public board: Board, renderOutput: 'console' | 'web') {
     this.render = {
       console: this.renderToConsole,
       web: this.renderToWeb,
@@ -20,6 +22,8 @@ export class Game {
     if (!this.figure) return
     if (!this.move('down')) {
       this.figure.ticksToFix = this.figure.ticksToFix ?? 5
+    } else{
+      this.figure.ticksToFix = null
     }
   }
 
@@ -42,47 +46,49 @@ export class Game {
     }
   }
 
-  updateCells(): void {
-    if (!this.figure) return
-    for (let y = 0; y < this.figure.shape.cells.length; y++) {
-      for (let x = 0; x < this.figure.shape.cells[y].length; x++) {
-        const cell = this.figure.shape.cells[y][x]
-        const boardY = this.figure.position.y + y
-        const boardX = this.figure.position.x + x
-        const boardCell = this.board.cells[boardY]?.[boardX]
-        if (!boardCell) {
-          console.error('this should never happen')
-          continue
-        }
-        if (cell.occupied) {
-          boardCell.occupied = cell.occupied
-          boardCell.color = this.figure.color
-        }
-      }
-    }
-  }
+  fixFigures(): boolean {
+    if (!this.figure) return false
 
-  fixFigures(): void {
-    if (!this.figure) return
-    if (this.figure.ticksToFix === null) return
+    if (this.figure.ticksToFix === null) return false
     if (this.figure.ticksToFix > 0) {
       this.figure.ticksToFix -= 1
-      return
+      return false
     }
+
+    for (let y = 0; y < this.figure.shape.cells.length; y++) {
+      for (let x = 0; x < this.figure.shape.cells[y].length; x++) {
+
+        const cell = this.figure.shape.cells[y][x]
+
+        if(!cell.occupied) continue
+        
+        const boardY = this.figure.position.y + y
+        const boardX = this.figure.position.x + x
+
+        this.board.cells[boardY][boardX].occupied = true
+    
+    this.board.cells[boardY][boardX].color = this.figure.color
+      }
+    }
+
     this.figure = null
+    return true
   }
 
-  removeCompletedLines(): void {
+  removeCompletedLines(): number {
     const rowsToRemove = this.board.cells
       .map((row, i) => (row.every((cell) => cell.occupied) ? i : null))
       .filter((i) => i !== null)
+    let count = 0
     rowsToRemove.forEach((rowIndex) => {
-      this.board.cells.splice(rowIndex!, 1)
+      this.board.cells.splice(rowIndex! - count, 1)
+      count++
     })
     const newLines = Array.from({ length: rowsToRemove.length }, () =>
       Array.from({ length: this.board.width }, () => new Cell(false)),
     )
     this.board.cells.unshift(...newLines)
+    return count
   }
 
   hasLost(): boolean {
@@ -93,13 +99,19 @@ export class Game {
     if (this.hasLost()) {
       this.board = new Board(this.board.height, this.board.width)
       this.figure = null
-      // alert('Has perdido')
+      alert('Has perdido')
       return
     }
     this.doGravity()
-    this.updateCells()
-    this.fixFigures()
-    this.removeCompletedLines()
+    
+    const fixed = this.fixFigures()
+    if (fixed) {
+      let completedLines = this.removeCompletedLines()
+      if (completedLines > 0){
+        const scores = [10, 25, 45, 70]
+        this.score += scores[completedLines-1]
+      }
+    }
     if (!this.figure) this.addNewFigure()
   }
 
@@ -120,7 +132,6 @@ export class Game {
     if (!collides) {
       this.figure.move(direction)
     }
-    this.updateCells()
     return !collides
   }
 
@@ -133,33 +144,41 @@ export class Game {
     if (!collides) {
       this.figure.rotate(direction)
     }
-    this.updateCells()
     return !collides
   }
 
-  private changeClock(ms: number) {
-    this.clockPeriod = ms
-    if (this.clock) {
-      clearInterval(this.clock)
-      this.start()
-    }
+  dotick() {
+    this.tick()
+    this.render()
+  }
+
+  public pause() {
+    this.clock && clearInterval(this.clock)
   }
 
   start() {
-    let lastTime = Date.now()
-    this.clock = setInterval(() => {
-      this.tick()
+    setInterval(() => {
       this.render()
-      const now = Date.now()
-      const elapsed = now - lastTime
-      if (elapsed > 5000) {
-        this.changeClock(Math.max(this.clockPeriod - 100, 100))
-      }
-    }, this.clockPeriod)
+    }, 10)
+
+    let lastTime = Date.now()
+    const run = () => {
+      this.clock = setInterval(() => {
+        this.tick()
+        const now = Date.now()
+        const elapsed = now - lastTime
+        if (elapsed > 5000) {
+          this.clockPeriod = Math.max(this.clockPeriod - 100, 100)
+          this.pause()
+          run()
+        }
+      }, this.clockPeriod)
+    }
+    run()
   }
 
   private renderToWeb(): void {
-    render(this.board)
+    render(this)
   }
 
   private renderToConsole(): void {
