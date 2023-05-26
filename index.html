@@ -8,10 +8,11 @@
   <title>Vite + TS</title>
 </head>
 
-<body>
-  <div id="grid"></div>
-  <h1>SCORE: <a id="points">0</a></h1>
-  <button id="button">TICK</button>
+<body class="flex" style="align-items: center; justify-content: center; overflow: hidden;">
+  <div class="flex gap-2">
+    <div id="grid"></div>
+    <h1 class="flex gap-1">SCORE: <span id="points" class="flex">0</span></h1>
+  </div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 

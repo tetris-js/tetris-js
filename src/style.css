@@ -72,6 +72,11 @@
   --color-L: var(--sandy-brown); */
 }
 
+html,
+body {
+  height: 100%;
+}
+
 #grid {
   display: grid;
   gap: 2px;
@@ -105,4 +110,20 @@
 
 #grid > .cell.figure {
   border: 1px solid fuchsia;
+}
+
+.flex {
+  display: flex;
+}
+
+.gap-1 {
+  gap: 1rem;
+}
+
+.gap-2 {
+  gap: 2rem;
+}
+
+#points {
+  width: 7ch;
 }
