@@ -12,6 +12,64 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  --salmon: #fd3f59;
+  --orange: #ffc82e;
+  --yellow: #fefb34;
+  --green: #53da3f;
+  --cyan: #01edfa;
+  --purple: #dd0ab2;
+  --red: #ea141c;
+  --dark-orange: #fe4819;
+  --sandy-brown: #ff910c;
+  --dark-green: #39892f;
+  --blue: #0077d3;
+  --dark-purple: #78256f;
+  --navy: #2e2e84;
+  --dark-medium-blue: #485dc5;
+
+  --purple-rainforest: #8a2be2;
+  --autumn-orange: #ff7f50;
+  --viridian-green: #40826d;
+  --turquoise-splash: #40e0d0;
+  --rose-sunset: #db4a7d;
+  --golden-sunflower: #fbb829;
+  --skyline-blue: #7ea6cf;
+
+  --deep-purple: #9400d3;
+  --vibrant-orange: #ff4500;
+  --rich-emerald: #009a34;
+  --electric-turquoise: #00f5ff;
+  --hot-pink: #ff1493;
+  --bold-sunflower: #ffd700;
+  --intense-azure: #1e90ff;
+
+  /* gpt 2nd */
+  --color-I: var(--deep-purple);
+  --color-O: var(--vibrant-orange);
+  --color-T: var(--rich-emerald);
+  --color-S: var(--electric-turquoise);
+  --color-Z: var(--hot-pink);
+  --color-L: var(--bold-sunflower);
+  --color-J: var(--intense-azure);
+
+  /* gpt 1st */
+  /* --color-I: var(--purple-rainforest);
+  --color-O: var(--autumn-orange);
+  --color-T: var(--viridian-green);
+  --color-S: var(--turquoise-splash);
+  --color-Z: var(--rose-sunset);
+  --color-L: var(--golden-sunflower);
+  --color-J: var(--skyline-blue); */
+
+  /* original */
+  /* --color-T: var(--purple);
+  --color-I: var(--cyan);
+  --color-S: var(--green);
+  --color-Z: var(--red);
+  --color-O: var(--yellow);
+  --color-J: var(--blue);
+  --color-L: var(--sandy-brown); */
 }
 
 #grid {
@@ -23,26 +81,26 @@
   background-color: #333;
 }
 
-#grid > .cell.occupied.red {
-  background-color: red;
+#grid > .cell.occupied.color-T {
+  background-color: var(--color-T);
 }
-#grid > .cell.occupied.blue {
-  background-color: blue;
+#grid > .cell.occupied.color-I {
+  background-color: var(--color-I);
 }
-#grid > .cell.occupied.green {
-  background-color: green;
+#grid > .cell.occupied.color-S {
+  background-color: var(--color-S);
 }
-#grid > .cell.occupied.yellow {
-  background-color: yellow;
+#grid > .cell.occupied.color-Z {
+  background-color: var(--color-Z);
 }
-#grid > .cell.occupied.purple {
-  background-color: purple;
+#grid > .cell.occupied.color-O {
+  background-color: var(--color-O);
 }
-#grid > .cell.occupied.orange {
-  background-color: orange;
+#grid > .cell.occupied.color-J {
+  background-color: var(--color-J);
 }
-#grid > .cell.occupied.white {
-  background-color: white;
+#grid > .cell.occupied.color-L {
+  background-color: var(--color-L);
 }
 
 #grid > .cell.figure {

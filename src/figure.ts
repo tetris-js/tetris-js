@@ -1,12 +1,12 @@
-import { Cell, Color, getRandomColor } from './cell'
+import { Cell, Color } from './cell'
 
-type figureName = 'T' | 'I' | 'S' | 'Z' | 'O' | 'J' | 'L'
+export type FigureName = 'T' | 'I' | 'S' | 'Z' | 'O' | 'J' | 'L'
 
 class Shape {
   public cells: Cell[][]
 
-  constructor(public name: figureName, shapeNumbers: number[][]) {
-    const color = getRandomColor()
+  constructor(public name: FigureName, shapeNumbers: number[][]) {
+    const color = `color-${name}` as Color
     this.cells = shapeNumbers.map((fila) =>
       fila.map(
         (celda) => new Cell(celda === 1, celda === 1 ? color : undefined),
@@ -52,38 +52,26 @@ type Rotation = 0 | 1 | 2 | 3
 
 export class Figure {
   public shape: Shape
-  public color: Color
   public ticksToFix: number | null = null
 
   constructor(
     public position: { x: number; y: number },
     public rotation: Rotation = 0,
     shapeArg?: Shape,
-    colorArg?: Color,
-    // la figura se fija cuando toca el fondo o una celda fijada
-    // si deberia fijarse, inicializar ticksParaFijar
-    // si ticksParaFijar es 0, fijar la figura
   ) {
     if (shapeArg) {
       this.shape = shapeArg
     } else {
       this.shape = getRandomShape()
     }
+  }
 
-    if (colorArg) {
-      this.color = colorArg
-    } else {
-      this.color = getRandomColor()
-    }
+  get color(): Color {
+    return `color-${this.shape.name}`
   }
 
   clone(): Figure {
-    const clone = new Figure(
-      { ...this.position },
-      this.rotation,
-      this.shape,
-      this.color,
-    )
+    const clone = new Figure({ ...this.position }, this.rotation, this.shape)
     clone.ticksToFix = this.ticksToFix
     return clone
   }

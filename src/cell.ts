@@ -1,24 +1,6 @@
-export type Color =
-  | 'red'
-  | 'blue'
-  | 'green'
-  | 'yellow'
-  | 'purple'
-  | 'orange'
-  | 'white'
+import { FigureName } from './figure'
 
-export const getRandomColor = (): Color => {
-  const colors: Color[] = [
-    'red',
-    'blue',
-    'green',
-    'yellow',
-    'purple',
-    'orange',
-    'white',
-  ]
-  return colors[Math.floor(Math.random() * colors.length)]
-}
+export type Color = `color-${FigureName}`
 
 export class Cell {
   constructor(public occupied: boolean, public color?: Color) {}

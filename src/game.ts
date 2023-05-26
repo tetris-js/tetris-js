@@ -91,7 +91,7 @@ export class Game {
     return this.board.cells[0].some((cell) => cell.occupied)
   }
 
-  private tick() {
+  public tick() {
     if (this.hasLost) {
       this.eventCallbacks.lose?.forEach((callback) => callback())
       this.board = new Board(this.board.height, this.board.width)
@@ -111,8 +111,8 @@ export class Game {
     if (!this.figure) this.addNewFigure()
   }
 
-  private addNewFigure(): void {
-    const figure = new Figure({
+  private addNewFigure(figure?: Figure): void {
+    figure ??= new Figure({
       x: 3 + ((Math.random() * (this.board.cells[0].length - 7)) | 0),
       y: 0,
     })
@@ -159,13 +159,9 @@ export class Game {
   }
 
   public resume() {
-    // let lastTime = Date.now()
     let lastScore = this.score
     this.clock = setInterval(() => {
-      console.log('tick')
       this.tick()
-      // const now = Date.now()
-      // const elapsed = now - lastTime
       if (this.score % 100 === 0 && this.score !== lastScore) {
         this.clockPeriod = Math.max(this.clockPeriod - 50, 50)
         this.pause()
