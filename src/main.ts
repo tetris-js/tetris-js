@@ -1,10 +1,11 @@
-import { Board } from './board'
-import { Game } from './game'
+import { Board } from './game/engine/board'
+import { Game } from './game/engine/game'
+import { render as webRender } from './game/renders/web'
 import './style.css'
 
-const game = new Game(new Board(40, 10), 'web')
+const game = new Game(new Board(40, 10), webRender)
 game.on('lose', () => {
-  console.log('por tonto')
+  console.log('You lose!')
 })
 game.start()
 document.addEventListener('keydown', (event) => {

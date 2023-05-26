@@ -1,4 +1,4 @@
-import { Game } from './game'
+import { Game } from '../engine/game'
 
 export const render = (game: Game) => {
   const board = game.board

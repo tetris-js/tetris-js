@@ -1,7 +1,6 @@
 import { Board } from './board'
 import { Cell } from './cell'
 import { Figure } from './figure'
-import { render } from './grid'
 
 type GameEventname = 'completedLines' | 'lose'
 interface Events {
@@ -11,7 +10,6 @@ interface Events {
 
 export class Game {
   public figure: Figure | null = null
-  private render: () => void
   private clockPeriod: number = 300
   private clock: number | null = null
   public score: number = 0
@@ -20,12 +18,7 @@ export class Game {
     lose: [],
   }
 
-  constructor(public board: Board, renderOutput: 'console' | 'web') {
-    this.render = {
-      console: this.renderToConsole,
-      web: this.renderToWeb,
-    }[renderOutput]
-  }
+  constructor(public board: Board, private render: (game: Game) => void) {}
 
   public on(name: GameEventname, callback: (...arg: unknown[]) => void): void {
     this.eventCallbacks[name]!.push(callback)
@@ -111,7 +104,7 @@ export class Game {
     if (!this.figure) this.addNewFigure()
   }
 
-  private addNewFigure(figure?: Figure): void {
+  public addNewFigure(figure?: Figure): void {
     figure ??= new Figure({
       x: 3 + ((Math.random() * (this.board.cells[0].length - 7)) | 0),
       y: 0,
@@ -173,27 +166,9 @@ export class Game {
 
   public start() {
     setInterval(() => {
-      this.render()
+      this.render(this)
     }, 10)
 
     this.resume()
-  }
-
-  private renderToWeb(): void {
-    render(this)
-  }
-
-  private renderToConsole(): void {
-    const frame = [`  ${this.board.cells[0].map((_, i) => i).join('')}`]
-      .concat(
-        this.board.cells.map((fila, i) => {
-          const row = fila.map((celda) => (celda.occupied ? 'X' : '.')).join('')
-          return `${i.toString().padStart(2)} ${row}`
-        }),
-      )
-      .join('\n')
-    console.clear()
-    console.log(frame)
-    console.log(this.figure)
   }
 }
