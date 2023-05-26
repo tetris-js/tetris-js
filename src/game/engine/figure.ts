@@ -53,6 +53,7 @@ type Rotation = 0 | 1 | 2 | 3
 export class Figure {
   public shape: Shape
   public ticksToFix: number | null = null
+  public cells: Cell[][] = []
 
   constructor(
     public position: { x: number; y: number },
@@ -63,6 +64,10 @@ export class Figure {
       this.shape = shapeArg
     } else {
       this.shape = getRandomShape()
+    }
+    this.cells = this.shape.cells
+    for (let i = 0; i < rotation; i++) {
+      this.rotate90()
     }
   }
 
@@ -76,26 +81,29 @@ export class Figure {
     return clone
   }
 
-  rotate90(figura: Shape): Shape {
-    const rows = figura.cells.length
-    const cols = figura.cells[0].length
+  rotate90(): void {
+    const rows = this.cells.length
+    const cols = this.cells[0].length
 
-    // Crear una nueva matriz para almacenar la rotación
-    const rotated = new Array(cols).fill(0).map(() => new Array(rows).fill(0))
+    const rotated: Cell[][] = Array.from({ length: cols }, () =>
+      Array.from({ length: rows }, () => new Cell(false)),
+    )
 
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
-        rotated[j][rows - 1 - i] = figura.cells[i][j]
+        rotated[j][rows - 1 - i] = this.cells[i][j]
       }
     }
-
-    return { name: figura.name, cells: rotated }
+    this.cells = rotated
   }
 
   rotate(direction: 1 | -1): void {
-    direction === 1
-      ? (this.shape = this.rotate90(this.shape))
-      : (this.shape = this.rotate90(this.rotate90(this.shape)))
+    if (direction === 1) this.rotate90()
+    else {
+      this.rotate90()
+      this.rotate90()
+      this.rotate90()
+    }
     this.rotation = ((this.rotation + direction) % 4) as Rotation
   }
 

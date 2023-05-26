@@ -11,7 +11,7 @@ interface Events {
 export class Game {
   public figure: Figure | null = null
   private clockPeriod: number = 300
-  private clock: number | null = null
+  private clock: NodeJS.Timer | null = null
   public score: number = 0
   private eventCallbacks: Events = {
     completedLines: [],
@@ -42,9 +42,9 @@ export class Game {
       return false
     }
 
-    for (let y = 0; y < this.figure.shape.cells.length; y++) {
-      for (let x = 0; x < this.figure.shape.cells[y].length; x++) {
-        const cell = this.figure.shape.cells[y][x]
+    for (let y = 0; y < this.figure.cells.length; y++) {
+      for (let x = 0; x < this.figure.cells[y].length; x++) {
+        const cell = this.figure.cells[y][x]
 
         if (!cell.occupied) continue
 
