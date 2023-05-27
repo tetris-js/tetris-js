@@ -2,7 +2,7 @@ import { Cell, Color } from './cell'
 
 export type FigureName = 'T' | 'I' | 'S' | 'Z' | 'O' | 'J' | 'L'
 
-class Shape {
+export class Shape {
   public cells: Cell[][]
 
   constructor(public name: FigureName, shapeNumbers: number[][]) {
@@ -15,40 +15,40 @@ class Shape {
   }
 }
 
-const shapeT = new Shape('T', [
+export const shapeT = new Shape('T', [
   [1, 1, 1],
   [0, 1, 0],
 ])
-const shapeI = new Shape('I', [[1], [1], [1], [1]])
-const shapeS = new Shape('S', [
+export const shapeI = new Shape('I', [[1], [1], [1], [1]])
+export const shapeS = new Shape('S', [
   [0, 1, 1],
   [1, 1, 0],
 ])
-const shapeZ = new Shape('Z', [
+export const shapeZ = new Shape('Z', [
   [1, 1, 0],
   [0, 1, 1],
 ])
-const shapeO = new Shape('O', [
+export const shapeO = new Shape('O', [
   [1, 1],
   [1, 1],
 ])
-const shapeJ = new Shape('J', [
+export const shapeJ = new Shape('J', [
   [0, 1],
   [0, 1],
   [1, 1],
 ])
-const shapeL = new Shape('L', [
+export const shapeL = new Shape('L', [
   [1, 0],
   [1, 0],
   [1, 1],
 ])
 
-const getRandomShape = (): Shape => {
+export const getRandomShape = (): Shape => {
   const shapes = [shapeT, shapeI, shapeS, shapeZ, shapeO, shapeJ, shapeL]
   return shapes[Math.floor(Math.random() * shapes.length)]
 }
 
-type Rotation = 0 | 1 | 2 | 3
+export type Rotation = 0 | 1 | 2 | 3
 
 export class Figure {
   public shape: Shape
