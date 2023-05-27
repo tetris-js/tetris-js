@@ -8,9 +8,11 @@ interface Events {
   lose: Array<() => void>
 }
 
+const INITIAL_CLOCK_PERIOD = 300
+
 export class Game {
   public figure: Figure | null = null
-  private clockPeriod: number = 300
+  private clockPeriod: number = INITIAL_CLOCK_PERIOD
   private clock: NodeJS.Timer | null = null
   public score: number = 0
   private eventCallbacks: Events = {
@@ -89,6 +91,8 @@ export class Game {
       this.eventCallbacks.lose?.forEach((callback) => callback())
       this.board = new Board(this.board.height, this.board.width)
       this.figure = null
+      this.score = 0
+      this.clockPeriod = INITIAL_CLOCK_PERIOD
       return
     }
     this.doGravity()
