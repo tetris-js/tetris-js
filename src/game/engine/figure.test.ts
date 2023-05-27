@@ -57,7 +57,7 @@ describe('Figure', () => {
         it('should rotate the figure', () => {
           const figure = new Figure({ x: 2, y: 3 }, 1, shapeL)
           figure.rotate(-1)
-          expect(figure.cells).toMatchInlineSnapshot([
+          expect(figure.cells).toMatchObject([
             [{ occupied: true }, { occupied: false }],
             [{ occupied: true }, { occupied: false }],
             [{ occupied: true }, { occupied: true }],
