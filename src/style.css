@@ -131,6 +131,14 @@ body {
   display: flex;
 }
 
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
 .gap-1 {
   gap: 1rem;
 }
@@ -150,4 +158,12 @@ body {
   height: 50vh;
   overflow-y: auto;
   cursor: pointer;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.p-2 {
+  padding: 2rem;
 }

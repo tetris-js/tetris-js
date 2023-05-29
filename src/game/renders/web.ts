@@ -1,6 +1,6 @@
 import { Game } from '../engine/game'
 
-const cellWidth = 16
+const cellWidth = 64
 let fullDebug = false
 
 const redactGame = (game: Game) => ({
