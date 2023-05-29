@@ -24,7 +24,7 @@ const useDebug = () => {
 
 const useControls = (
   cb: (
-    control: 'left' | 'right' | 'down' | 'rotate' | 'tick' | 'pause',
+    control: 'left' | 'right' | 'down' | 'rotate' | 'tick' | 'pause' | 'mute',
   ) => void,
 ) => {
   const useTouchControls = () => {
@@ -94,6 +94,7 @@ const useControls = (
       else if (event.key === 'ArrowUp') cb('rotate')
       else if (event.key === 't') cb('tick')
       else if (event.key === 'Escape') cb('pause')
+      else if (event.key === 'm') cb('mute')
       else return
 
       event.preventDefault()
@@ -111,7 +112,42 @@ const useControls = (
   }
 }
 
+const useMusic = () => {
+  const musicStr =
+    '䰄䜈䠈䨄䠈䜈䔄䔈䠈䰄䨈䠈䜄䜈䠈䨄䰄䠄䔄䔄\x04䨃䴈億伈䴈䰃䠈䰄䨈䠈䜄䜈䠈䨄䰄䠄䔄䔄\x04'
+
+  const music: Array<[number, number]> = []
+
+  for (let i = 0; i < musicStr.length; i++) {
+    const charCode = musicStr.charCodeAt(i)
+    const a = charCode >> 8
+    const b = charCode & 0xff
+    music.push([a, b])
+  }
+  const eps = 0.01
+  const context = new AudioContext()
+  const oscillator = context.createOscillator()
+  oscillator.connect(context.destination)
+  oscillator.start(0)
+  let time = context.currentTime + eps
+  const loop = () => {
+    music.forEach((note) => {
+      const freq = Math.pow(2, (note[0] - 69) / 12) * 440
+      oscillator.frequency.setTargetAtTime(0, time - eps, 0.001)
+      oscillator.frequency.setTargetAtTime(freq, time, 0.001)
+      time += 2 / note[1]
+    })
+  }
+  loop()
+  const loopId = setInterval(loop, time * 1000 - context.currentTime * 1000)
+  return () => {
+    oscillator.stop()
+    clearInterval(loopId)
+  }
+}
+
 const onMounted = (game: Game) => {
+  let stopMusic: undefined | (() => void)
   grid.style.gridTemplateColumns = `repeat(${game.board.width}, ${cellWidth}px)`
   grid.style.gridTemplateRows = `repeat(${game.board.height}, ${cellWidth}px)`
   for (let i = 0; i < game.board.width * game.board.height; i++) {
@@ -122,9 +158,18 @@ const onMounted = (game: Game) => {
 
   let removeControlHandler: undefined | (() => void)
 
+  let isMuted = false
   const controlHandler = (
-    control: 'left' | 'right' | 'down' | 'rotate' | 'tick' | 'pause',
+    control: 'left' | 'right' | 'down' | 'rotate' | 'tick' | 'pause' | 'mute',
   ): void => {
+    if (!stopMusic && !isMuted) {
+      stopMusic = useMusic()
+    }
+    if (control === 'mute') {
+      isMuted = !isMuted
+      stopMusic?.()
+      stopMusic = undefined
+    }
     if (control === 'left') game.move('left')
     if (control === 'right') game.move('right')
     if (control === 'down') game.move('down')
@@ -133,6 +178,9 @@ const onMounted = (game: Game) => {
     if (control === 'pause') {
       if (game.isPaused) {
         removeControlHandler = useControls(controlHandler)
+        if (!isMuted) {
+          stopMusic = useMusic()
+        }
         game.resume()
       } else {
         removeControlHandler?.()
