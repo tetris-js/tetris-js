@@ -146,4 +146,7 @@ body {
 #debug {
   max-width: 50ch;
   line-break: anywhere;
+  max-height: 50vh;
+  overflow-y: auto;
+  cursor: pointer;
 }

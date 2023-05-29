@@ -1,5 +1,23 @@
 import { Game } from '../engine/game'
 
+let fullDebug = false
+
+const redactGame = (game: Game) => ({
+  ...game,
+  board: { ...game.board, cells: '...' },
+  figure: {
+    ...game.figure,
+    cells: '...',
+    shape: { ...game.figure?.shape, cells: '...' },
+  },
+})
+const debugElement = document.getElementById('debug')!
+debugElement.addEventListener('click', () => {
+  fullDebug = !fullDebug
+})
+
+const pointsElement = document.getElementById('points')!
+
 export const render = (game: Game) => {
   const board = game.board
   const figure = game.figure
@@ -56,9 +74,10 @@ export const render = (game: Game) => {
     grid.children[i].classList.value = 'cell occupied ' + color
   })
 
-  document.getElementById('points')!.innerText = game.score.toString()
-  document.getElementById('debug')!.innerText = JSON.stringify({
-    ...game,
-    board: 'redacted',
-  })
+  pointsElement.innerText = game.score.toString()
+  debugElement.innerHTML = JSON.stringify(
+    fullDebug ? game : redactGame(game),
+    null,
+    2,
+  )
 }
