@@ -144,9 +144,10 @@ body {
 }
 
 #debug {
-  max-width: 50ch;
+  width: 40ch;
   line-break: anywhere;
-  max-height: 50vh;
+  background-color: #333;
+  height: 50vh;
   overflow-y: auto;
   cursor: pointer;
 }
