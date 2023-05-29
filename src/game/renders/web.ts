@@ -35,69 +35,80 @@ const useControls = (
 
     let controlLoopId: NodeJS.Timer | null = null
     const controlLoop = () => {}
-    document.addEventListener(
-      'touchmove',
-      (e) => {
-        touchendX = e.changedTouches[0].screenX
-        touchendY = e.changedTouches[0].screenY
-        const deltaX = touchstartX - touchendX
-        const deltaY = touchstartY - touchendY
-        if (Math.abs(deltaX) > cellWidth) {
-          if (deltaX > 0) cb('left')
-          else cb('right')
+    const touchMoveHandler = (e: TouchEvent) => {
+      touchendX = e.changedTouches[0].screenX
+      touchendY = e.changedTouches[0].screenY
+      const deltaX = touchstartX - touchendX
+      const deltaY = touchstartY - touchendY
+      if (Math.abs(deltaX) > cellWidth) {
+        if (deltaX > 0) cb('left')
+        else cb('right')
 
-          touchstartX = touchendX
-        } else if (Math.abs(deltaY) > cellWidth) {
-          if (deltaY < 0) cb('down')
-          touchstartY = touchendY
-        }
-      },
-      { passive: true },
-    )
+        touchstartX = touchendX
+      } else if (Math.abs(deltaY) > cellWidth) {
+        if (deltaY < 0) cb('down')
+        touchstartY = touchendY
+      }
+    }
 
-    document.addEventListener(
-      'touchstart',
-      (e) => {
-        touchstartX = e.changedTouches[0].screenX
-        touchstartY = e.changedTouches[0].screenY
+    const touchstartHandler = (e: TouchEvent): void => {
+      touchstartX = e.changedTouches[0].screenX
+      touchstartY = e.changedTouches[0].screenY
 
-        controlLoopId = setInterval(() => {
-          controlLoop()
-        })
-      },
-      { passive: true },
-    )
+      controlLoopId = setInterval(() => {
+        controlLoop()
+      })
+    }
 
-    document.addEventListener(
-      'touchend',
-      (e) => {
-        controlLoopId && clearInterval(controlLoopId)
+    const touchendHandler = (e: TouchEvent): void => {
+      controlLoopId && clearInterval(controlLoopId)
 
-        touchendX = e.changedTouches[0].screenX
-        touchendY = e.changedTouches[0].screenY
-        const deltaX = touchstartX - touchendX
-        const deltaY = touchstartY - touchendY
+      touchendX = e.changedTouches[0].screenX
+      touchendY = e.changedTouches[0].screenY
+      const deltaX = touchstartX - touchendX
+      const deltaY = touchstartY - touchendY
 
-        if (Math.abs(deltaX) + Math.abs(deltaY) < 10) {
-          cb('rotate')
-        }
-      },
-      { passive: true },
-    )
+      if (Math.abs(deltaX) + Math.abs(deltaY) < 10) {
+        cb('rotate')
+      }
+    }
+
+    document.addEventListener('touchmove', touchMoveHandler, { passive: true })
+    document.addEventListener('touchstart', touchstartHandler, {
+      passive: true,
+    })
+    document.addEventListener('touchend', touchendHandler, { passive: true })
+
+    return () => {
+      document.removeEventListener('touchmove', touchMoveHandler)
+      document.removeEventListener('touchstart', touchstartHandler)
+      document.removeEventListener('touchend', touchendHandler)
+    }
   }
 
   const useKeyboardControls = () => {
-    document.addEventListener('keydown', (event) => {
+    const keyboardEventHandler = (event: KeyboardEvent): void => {
       if (event.key === 'ArrowLeft') cb('left')
-      if (event.key === 'ArrowRight') cb('right')
-      if (event.key === 'ArrowDown') cb('down')
-      if (event.key === 'ArrowUp') cb('rotate')
-      if (event.key === 't') cb('tick')
-      if (event.key === 'Escape') cb('pause')
-    })
+      else if (event.key === 'ArrowRight') cb('right')
+      else if (event.key === 'ArrowDown') cb('down')
+      else if (event.key === 'ArrowUp') cb('rotate')
+      else if (event.key === 't') cb('tick')
+      else if (event.key === 'Escape') cb('pause')
+      else return
+
+      event.preventDefault()
+    }
+    document.addEventListener('keydown', keyboardEventHandler)
+    return () => {
+      document.removeEventListener('keydown', keyboardEventHandler)
+    }
   }
-  useTouchControls()
-  useKeyboardControls()
+  const touchControlCleanup = useTouchControls()
+  const keyboardControlsCleanup = useKeyboardControls()
+  return () => {
+    touchControlCleanup()
+    keyboardControlsCleanup()
+  }
 }
 
 const onMounted = (game: Game) => {
@@ -109,18 +120,27 @@ const onMounted = (game: Game) => {
     grid.appendChild(cell)
   }
 
-  useControls((control) => {
+  let removeControlHandler: undefined | (() => void)
+
+  const controlHandler = (
+    control: 'left' | 'right' | 'down' | 'rotate' | 'tick' | 'pause',
+  ): void => {
     if (control === 'left') game.move('left')
     if (control === 'right') game.move('right')
     if (control === 'down') game.move('down')
     if (control === 'rotate') game.rotate(1)
     if (control === 'tick') game.tick()
     if (control === 'pause') {
-      if (game.isPaused) game.resume()
-      else game.pause()
+      if (game.isPaused) {
+        removeControlHandler = useControls(controlHandler)
+        game.resume()
+      } else {
+        removeControlHandler?.()
+        game.pause()
+      }
     }
-  })
-
+  }
+  removeControlHandler = useControls(controlHandler)
   useDebug()
 }
 
