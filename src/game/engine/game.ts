@@ -158,15 +158,16 @@ export class Game {
   }
 
   public resume() {
-    let lastScore = this.score
+    let lastLevel = (this.score / 100) | 0
     this.clock = setInterval(() => {
       this.tick()
-      if (this.score % 100 === 0 && this.score !== lastScore) {
+      const currentLevel = (this.score / 100) | 0
+      if (currentLevel > lastLevel) {
         this.clockPeriod = Math.max(this.clockPeriod - 50, 50)
         this.pause()
         this.resume()
-        lastScore = this.score
       }
+      lastLevel = currentLevel
     }, this.clockPeriod)
   }
 
