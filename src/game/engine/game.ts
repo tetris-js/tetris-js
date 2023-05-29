@@ -163,7 +163,7 @@ export class Game {
       this.tick()
       const currentLevel = (this.score / 100) | 0
       if (currentLevel > lastLevel) {
-        this.clockPeriod = Math.max(this.clockPeriod - 50, 50)
+        this.clockPeriod = Math.max(this.clockPeriod - 50, 100)
         this.pause()
         this.resume()
       }
