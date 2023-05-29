@@ -127,3 +127,8 @@ body {
 #points {
   width: 7ch;
 }
+
+#debug {
+  max-width: 50ch;
+  line-break: anywhere;
+}

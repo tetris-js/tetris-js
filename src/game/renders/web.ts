@@ -12,6 +12,17 @@ export const render = (game: Game) => {
       cell.classList.add('cell')
       grid.appendChild(cell)
     }
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') game.move('left')
+      if (event.key === 'ArrowRight') game.move('right')
+      if (event.key === 'ArrowDown') game.move('down')
+      if (event.key === 'ArrowUp') game.rotate(1)
+      if (event.key === 't') game.tick()
+      if (event.key === 'Escape') {
+        if (game.isPaused) game.resume()
+        else game.pause()
+      }
+    })
   }
 
   let virtualBoard: Array<string | undefined> = []
@@ -45,5 +56,9 @@ export const render = (game: Game) => {
     grid.children[i].classList.value = 'cell occupied ' + color
   })
 
-  document.getElementById('points')!.innerHTML = game.score.toString()
+  document.getElementById('points')!.innerText = game.score.toString()
+  document.getElementById('debug')!.innerText = JSON.stringify({
+    ...game,
+    board: 'redacted',
+  })
 }
