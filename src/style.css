@@ -86,6 +86,21 @@ body {
   background-color: #333;
 }
 
+#grid > .cell.occupied {
+  position: relative;
+}
+
+#grid > .cell.occupied::before {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: radial-gradient(
+    circle at bottom right,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(255, 255, 255, 0.5) 100%
+  );
+}
+
 #grid > .cell.occupied.color-T {
   background-color: var(--color-T);
 }
