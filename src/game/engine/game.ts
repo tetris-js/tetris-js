@@ -2,10 +2,10 @@ import { Board } from './board'
 import { Cell } from './cell'
 import { Figure } from './figure'
 
-type GameEventname = 'completedLines' | 'lose'
 interface Events {
   completedLines: Array<(arg: { count: number }) => void>
   lose: Array<() => void>
+  tick: Array<() => void>
 }
 
 const INITIAL_CLOCK_PERIOD = 300
@@ -18,11 +18,12 @@ export class Game {
   private eventCallbacks: Events = {
     completedLines: [],
     lose: [],
+    tick: [],
   }
 
   constructor(public board: Board, private render: (game: Game) => void) {}
 
-  public on(name: GameEventname, callback: (...arg: unknown[]) => void): void {
+  public on(name: keyof Events, callback: (...arg: unknown[]) => void): void {
     this.eventCallbacks[name]!.push(callback)
   }
 
@@ -106,6 +107,7 @@ export class Game {
       }
     }
     if (!this.figure) this.addNewFigure()
+    this.eventCallbacks.tick?.forEach((callback) => callback())
   }
 
   public addNewFigure(figure?: Figure): void {
