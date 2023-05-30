@@ -8,10 +8,17 @@ interface Events {
   tick: Array<() => void>
 }
 
+export interface GameConfig {
+  nextFigureHintNumber: number
+}
+
+const defaultGameConfig: GameConfig = {
+  nextFigureHintNumber: 3,
+}
+
 const INITIAL_CLOCK_PERIOD = 300
 
 export class Game {
-  public figure: Figure | null = null
   private clockPeriod: number = INITIAL_CLOCK_PERIOD
   private clock: NodeJS.Timer | null = null
   public score: number = 0
@@ -20,8 +27,17 @@ export class Game {
     lose: [],
     tick: [],
   }
+  public figure: Figure | null = null
+  public nextFigures: Figure[] = []
+  public config: GameConfig
 
-  constructor(public board: Board, private render: (game: Game) => void) {}
+  constructor(
+    public board: Board,
+    private render: (game: Game) => void,
+    config: Partial<GameConfig> = {},
+  ) {
+    this.config = { ...defaultGameConfig, ...config }
+  }
 
   public on(name: keyof Events, callback: (...arg: unknown[]) => void): void {
     this.eventCallbacks[name]!.push(callback)
@@ -87,13 +103,20 @@ export class Game {
     return this.board.cells[0].some((cell) => cell.occupied)
   }
 
+  public reset(): void {
+    this.board = new Board(this.board.height, this.board.width)
+    this.figure = null
+    this.nextFigures = []
+    this.score = 0
+    this.clockPeriod = INITIAL_CLOCK_PERIOD
+    this.pause()
+    this.resume()
+  }
+
   public tick() {
     if (this.hasLost) {
       this.eventCallbacks.lose?.forEach((callback) => callback())
-      this.board = new Board(this.board.height, this.board.width)
-      this.figure = null
-      this.score = 0
-      this.clockPeriod = INITIAL_CLOCK_PERIOD
+      this.reset()
       return
     }
     this.doGravity()
@@ -106,16 +129,29 @@ export class Game {
         this.score += scores[completedLines - 1]
       }
     }
-    if (!this.figure) this.addNewFigure()
+    this.addNewFigures()
     this.eventCallbacks.tick?.forEach((callback) => callback())
   }
 
-  public addNewFigure(figure?: Figure): void {
-    figure ??= new Figure({
-      x: 3 + ((Math.random() * (this.board.cells[0].length - 7)) | 0),
-      y: 0,
-    })
-    this.figure = figure
+  private addNewFigures(): void {
+    const numberOfFiguresToAdd =
+      this.config.nextFigureHintNumber -
+      this.nextFigures.length +
+      (this.figure === null ? 1 : 0)
+    if (numberOfFiguresToAdd > 0) {
+      for (let i = 0; i < numberOfFiguresToAdd; i++) {
+        this.nextFigures.push(
+          new Figure({
+            x: 3 + ((Math.random() * (this.board.cells[0].length - 7)) | 0),
+            y: 0,
+          }),
+        )
+      }
+    }
+
+    if (this.figure === null) {
+      this.figure = this.nextFigures.shift()!
+    }
   }
 
   public move(
