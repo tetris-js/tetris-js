@@ -77,20 +77,20 @@ body {
   height: 100%;
 }
 
-#grid {
+.game-grid {
   display: grid;
   gap: 2px;
 }
 
-#grid > .cell {
+.game-grid > .cell {
   background-color: #333;
 }
 
-#grid > .cell.occupied {
+.game-grid > .cell.occupied {
   position: relative;
 }
 
-#grid > .cell.occupied::before {
+.game-grid > .cell.occupied::before {
   position: absolute;
   inset: 0;
   content: '';
@@ -101,30 +101,36 @@ body {
   );
 }
 
-#grid > .cell.occupied.color-T {
+.game-grid > .cell.occupied.color-T {
   background-color: var(--color-T);
 }
-#grid > .cell.occupied.color-I {
+.game-grid > .cell.occupied.color-I {
   background-color: var(--color-I);
 }
-#grid > .cell.occupied.color-S {
+.game-grid > .cell.occupied.color-S {
   background-color: var(--color-S);
 }
-#grid > .cell.occupied.color-Z {
+.game-grid > .cell.occupied.color-Z {
   background-color: var(--color-Z);
 }
-#grid > .cell.occupied.color-O {
+.game-grid > .cell.occupied.color-O {
   background-color: var(--color-O);
 }
-#grid > .cell.occupied.color-J {
+.game-grid > .cell.occupied.color-J {
   background-color: var(--color-J);
 }
-#grid > .cell.occupied.color-L {
+.game-grid > .cell.occupied.color-L {
   background-color: var(--color-L);
 }
 
-#grid > .cell.figure {
+.game-grid > .cell.figure {
   border: 1px solid fuchsia;
+}
+
+#next-figures {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .flex {

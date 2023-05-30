@@ -15,7 +15,7 @@ describe('Game', () => {
       const board = new Board(10, 10)
       const game = new Game(board, renderNothing)
       expect(game.figure).toBeNull()
-      game.addNewFigure()
+      game.figure = new Figure({ x: 3, y: 0 })
       expect(game.figure).toBeInstanceOf(Figure)
     })
   })
@@ -42,7 +42,7 @@ describe('Game', () => {
       it('should fix', () => {
         const board = new Board(10, 10)
         const game = new Game(board, renderNothing)
-        game.addNewFigure(new Figure({ y: 7, x: 3 }, 0, shapeL))
+        game.figure = new Figure({ y: 7, x: 3 }, 0, shapeL)
         game.tick()
         game.tick()
         game.tick()
@@ -75,7 +75,7 @@ describe('Game', () => {
         board.cells[4].forEach((cell, i) => (cell.occupied = i % 2 === 0))
         board.cells[5].forEach((cell) => (cell.occupied = true))
         const game = new Game(board, renderNothing)
-        game.addNewFigure(new Figure({ y: 8, x: 3 }, 0, shapeO))
+        game.figure = new Figure({ y: 8, x: 3 }, 0, shapeO)
         game.figure!.ticksToFix = 0
         game.tick()
         expect(getBoardRepresentation(board)).toMatchInlineSnapshot(`
@@ -100,7 +100,7 @@ describe('Game', () => {
       it('should move to the right', () => {
         const board = new Board(10, 10)
         const game = new Game(board, renderNothing)
-        game.addNewFigure(new Figure({ y: 3, x: 1 }, 0, shapeL))
+        game.figure = new Figure({ y: 3, x: 1 }, 0, shapeL)
         expect(game.move('right')).toBe(true)
         expect(getBoardRepresentation(board)).toMatchInlineSnapshot(`
           "
@@ -125,7 +125,7 @@ describe('Game', () => {
       it('should move down', () => {
         const board = new Board(10, 10)
         const game = new Game(board, renderNothing)
-        game.addNewFigure(new Figure({ y: 3, x: 1 }, 0, shapeL))
+        game.figure = new Figure({ y: 3, x: 1 }, 0, shapeL)
         game.tick()
         expect(game.figure?.position).toMatchObject({ y: 4, x: 1 })
       })
@@ -133,7 +133,7 @@ describe('Game', () => {
       it('should not add points to the score', () => {
         const board = new Board(10, 10)
         const game = new Game(board, renderNothing)
-        game.addNewFigure(new Figure({ y: 3, x: 1 }, 0, shapeL))
+        game.figure = new Figure({ y: 3, x: 1 }, 0, shapeL)
         game.tick()
         expect(game.score).toBe(0)
       })
@@ -143,7 +143,7 @@ describe('Game', () => {
       it('should move down', () => {
         const board = new Board(10, 10)
         const game = new Game(board, renderNothing)
-        game.addNewFigure(new Figure({ y: 3, x: 1 }, 0, shapeL))
+        game.figure = new Figure({ y: 3, x: 1 }, 0, shapeL)
         expect(game.move('down')).toBe(true)
         expect(game.figure?.position).toMatchObject({ y: 4, x: 1 })
       })
@@ -151,7 +151,7 @@ describe('Game', () => {
       it('should add points to the score', () => {
         const board = new Board(10, 10)
         const game = new Game(board, renderNothing)
-        game.addNewFigure(new Figure({ y: 3, x: 1 }, 0, shapeL))
+        game.figure = new Figure({ y: 3, x: 1 }, 0, shapeL)
         expect(game.move('down')).toBe(true)
         expect(game.score).toBe(1)
       })
@@ -181,7 +181,7 @@ describe('Game', () => {
       it('should rotate', () => {
         const board = new Board(10, 10)
         const game = new Game(board, renderNothing)
-        game.addNewFigure(new Figure({ y: 3, x: 1 }, 0, shapeL))
+        game.figure = new Figure({ y: 3, x: 1 }, 0, shapeL)
         game.rotate(1)
         expect(game.figure?.rotation).toBe(1)
         game.rotate(1)
@@ -193,7 +193,7 @@ describe('Game', () => {
       it('should not rotate', () => {
         const board = new Board(10, 10)
         const game = new Game(board, renderNothing)
-        game.addNewFigure(new Figure({ y: 3, x: 8 }, 0, shapeL))
+        game.figure = new Figure({ y: 3, x: 8 }, 0, shapeL)
         expect(game.rotate(1)).toBe(false)
         expect(game.figure?.rotation).toBe(0)
       })
@@ -258,7 +258,7 @@ describe('Game', () => {
         game.start()
         vi.advanceTimersByTime(5000)
         expect(mockTick).toHaveBeenCalledTimes(16)
-        game.addNewFigure()
+        game.figure = new Figure({ x: 3, y: 0 })
         game.score = 99
         game.move('down')
         expect(game.score).toBe(100)

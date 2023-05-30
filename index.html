@@ -12,9 +12,12 @@
   <div class="flex gap-2 overflow-auto p-2">
     <div class="flex flex-col gap-2 flex-1">
       <h1 class="flex gap-1">SCORE: <span id="points" class="flex">0</span></h1>
-      <div id="grid"></div>
+      <div id="main-game-grid" class="game-grid"></div>
     </div>
-    <code class="flex-1"><pre id="debug"></pre></code>
+    <div>
+      <div id="next-figures"></div>
+      <code class="flex-1"><pre id="debug"></pre></code>
+    </div>
   </div>
   <script type="module" src="/src/main.ts"></script>
 </body>

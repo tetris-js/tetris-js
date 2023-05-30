@@ -1,3 +1,5 @@
+import { Cell } from '../engine/cell'
+import { Figure } from '../engine/figure'
 import { Game } from '../engine/game'
 
 const cellWidth = 64
@@ -14,7 +16,9 @@ const redactGame = (game: Game) => ({
 })
 const debugElement = document.getElementById('debug')!
 const pointsElement = document.getElementById('points')!
-const grid = document.getElementById('grid')!
+const mainGameGrid = document.getElementById('main-game-grid')!
+const nextFiguresContainer = document.getElementById('next-figures')!
+const nextFiguresElements: HTMLElement[] = []
 
 const useDebug = () => {
   debugElement.addEventListener('click', () => {
@@ -146,25 +150,13 @@ const useMusic = () => {
   }
 }
 
-const onMounted = (game: Game) => {
-  let stopMusic: undefined | (() => void)
-  grid.style.gridTemplateColumns = `repeat(${game.board.width}, ${cellWidth}px)`
-  grid.style.gridTemplateRows = `repeat(${game.board.height}, ${cellWidth}px)`
-  for (let i = 0; i < game.board.width * game.board.height; i++) {
-    const cell = document.createElement('div')
-    cell.classList.add('cell')
-    grid.appendChild(cell)
-  }
+let removeControlHandler: undefined | (() => void)
 
-  let removeControlHandler: undefined | (() => void)
-
-  let isMuted = false
-  const controlHandler = (
+const controlHandler =
+  (game: Game) =>
+  (
     control: 'left' | 'right' | 'down' | 'rotate' | 'tick' | 'pause' | 'mute',
   ): void => {
-    if (!stopMusic && !isMuted) {
-      stopMusic = useMusic()
-    }
     if (control === 'mute') {
       isMuted = !isMuted
       stopMusic?.()
@@ -177,7 +169,7 @@ const onMounted = (game: Game) => {
     if (control === 'tick') game.tick()
     if (control === 'pause') {
       if (game.isPaused) {
-        removeControlHandler = useControls(controlHandler)
+        removeControlHandler = useControls(controlHandler(game))
         if (!isMuted) {
           stopMusic = useMusic()
         }
@@ -188,33 +180,55 @@ const onMounted = (game: Game) => {
       }
     }
   }
-  removeControlHandler = useControls(controlHandler)
+let stopMusic: undefined | (() => void)
+let isMuted = false
+
+const onMounted = (game: Game) => {
+  if (!stopMusic && !isMuted) {
+    stopMusic = useMusic()
+  }
+  removeControlHandler = useControls(controlHandler(game))
   useDebug()
 }
 
-export const render = (game: Game) => {
+const renderCellsToGameGrid = ({
+  cells,
+  figure,
+  grid,
+}: {
+  cells: Cell[][]
+  figure?: Figure
+  grid: HTMLElement
+}) => {
   if (grid.children.length === 0) {
-    onMounted(game)
+    grid.style.gridTemplateColumns = `repeat(${cells[0].length}, ${cellWidth}px)`
+    grid.style.gridTemplateRows = `repeat(${cells.length}, ${cellWidth}px)`
+    for (let i = 0; i < cells[0].length * cells.length; i++) {
+      const cell = document.createElement('div')
+      cell.classList.add('cell')
+      grid.appendChild(cell)
+    }
   }
-  let virtualBoard: Array<string | undefined> = []
 
-  game.board.cells.forEach((row) => {
+  const virtualBoard: Array<string | undefined> = []
+
+  cells.forEach((row) => {
     row.forEach((cell) => {
       virtualBoard.push(cell.color)
     })
   })
 
-  if (game.figure) {
-    for (let y = 0; y < game.figure.cells.length; y++) {
-      for (let x = 0; x < game.figure.cells[y].length; x++) {
-        const cell = game.figure.cells[y][x]
+  if (figure) {
+    for (let y = 0; y < figure.cells.length; y++) {
+      for (let x = 0; x < figure.cells[y].length; x++) {
+        const cell = figure.cells[y][x]
 
         if (!cell.occupied) continue
 
-        const boardY = game.figure.position.y + y
-        const boardX = game.figure.position.x + x
+        const boardY = figure.position.y + y
+        const boardX = figure.position.x + x
 
-        virtualBoard[boardY * game.board.width + boardX] = game.figure.color
+        virtualBoard[boardY * cells[0].length + boardX] = figure.color
       }
     }
   }
@@ -225,6 +239,47 @@ export const render = (game: Game) => {
       return
     }
     grid.children[i].classList.value = 'cell occupied ' + color
+  })
+}
+
+export const render = (game: Game) => {
+  if (mainGameGrid.children.length === 0) {
+    onMounted(game)
+  }
+
+  renderCellsToGameGrid({
+    cells: game.board.cells,
+    figure: game.figure ?? undefined,
+    grid: mainGameGrid,
+  })
+
+  if (game.nextFigures.length > 0 && nextFiguresElements.length === 0) {
+    nextFiguresContainer.innerHTML =
+      '<div class="next-figure game-grid"></div>'.repeat(
+        game.nextFigures.length,
+      )
+    nextFiguresElements.push(
+      ...(Array.from(nextFiguresContainer.children) as HTMLElement[]),
+    )
+  }
+
+  game.nextFigures.forEach((figure, i) => {
+    const element = nextFiguresElements[i]
+    const cells = Array.from({ length: 5 }, () =>
+      Array.from({ length: 5 }, () => new Cell(false)),
+    )
+    renderCellsToGameGrid({
+      cells,
+      figure: {
+        ...figure,
+        color: figure.color,
+        position: {
+          x: figure.shape.name === 'I' ? 2 : 1,
+          y: figure.shape.name === 'I' ? 0 : 1,
+        },
+      } as Figure,
+      grid: element,
+    })
   })
 
   pointsElement.innerText = game.score.toString()
