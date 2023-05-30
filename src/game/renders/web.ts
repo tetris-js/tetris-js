@@ -120,14 +120,13 @@ const useMusic = () => {
   const musicStr =
     '䰄䜈䠈䨄䠈䜈䔄䔈䠈䰄䨈䠈䜄䜈䠈䨄䰄䠄䔄䔄\x04䨃䴈億伈䴈䰃䠈䰄䨈䠈䜄䜈䠈䨄䰄䠄䔄䔄\x04'
 
-  const music: Array<[number, number]> = []
+  const music: Array<[number, number]> = Array.from(musicStr).map(
+    (c) =>
+      new Array(2)
+        .fill(c.charCodeAt(0))
+        .map((n, i) => (i ? n & 0xff : n >> 8)) as [number, number],
+  )
 
-  for (let i = 0; i < musicStr.length; i++) {
-    const charCode = musicStr.charCodeAt(i)
-    const a = charCode >> 8
-    const b = charCode & 0xff
-    music.push([a, b])
-  }
   const eps = 0.01
   const context = new AudioContext()
   const oscillator = context.createOscillator()
@@ -159,8 +158,12 @@ const controlHandler =
   ): void => {
     if (control === 'mute') {
       isMuted = !isMuted
-      stopMusic?.()
-      stopMusic = undefined
+      if (isMuted) {
+        stopMusic?.()
+        stopMusic = undefined
+      } else {
+        stopMusic = useMusic()
+      }
     }
     if (control === 'left') game.move('left')
     if (control === 'right') game.move('right')
