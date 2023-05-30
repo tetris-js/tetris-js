@@ -10,25 +10,59 @@ interface Events {
 
 export interface GameConfig {
   nextFigureHintNumber: number
+  initialGameClockPeriod: number
+  initialScore: number
+  multipleLineScoreMultiplier: number[]
+  scoreLevelStep: number
+  minimumGameClockPeriod: number
+  renderClockPeriod: number
+  levelGameClockStep: number
+  moveDownScorePoints: number
+  newFigurePaddingX: number
+  newFigurePaddingTop: number
 }
 
 const defaultGameConfig: GameConfig = {
+  // number of figures to show in the next figure hint
   nextFigureHintNumber: 3,
+  // how often the game is rendered in ms
+  renderClockPeriod: 10,
+  // initial game clock (used for difficulty) in ms
+  initialGameClockPeriod: 300,
+  // minimum game clock (used for difficulty) in ms. 100 means the game clock
+  // will never be faster than 100ms.
+  minimumGameClockPeriod: 100,
+  // how much the game clock is reduced when the player levels up
+  levelGameClockStep: 50,
+  // score multiplier when multiple lines are completed at once. Each index
+  // score the player has to reach to level up. E.g. 100, 200, 300, etc.
+  scoreLevelStep: 100,
+  // represents the number of lines completed at once, and the value is the
+  // multiplier. For example, if the player completes 2 lines at once, the
+  // score will be multiplied by 25.
+  multipleLineScoreMultiplier: [10, 25, 45, 70],
+  // how many points the player gets when moving down
+  moveDownScorePoints: 1,
+  initialScore: 0,
+  // how many cells on the X axis to NOT use when generating a new figure
+  newFigurePaddingX: 3,
+  // how many cells will the new figure be from the top
+  newFigurePaddingTop: 0,
 }
 
-const INITIAL_CLOCK_PERIOD = 300
-
 export class Game {
-  private clockPeriod: number = INITIAL_CLOCK_PERIOD
+  // these are set on reset()
+  private clockPeriod!: number
+  public score!: number
+  public figure!: Figure | null
+  public nextFigures!: Figure[]
+
   private clock: NodeJS.Timer | null = null
-  public score: number = 0
   private eventCallbacks: Events = {
     completedLines: [],
     lose: [],
     tick: [],
   }
-  public figure: Figure | null = null
-  public nextFigures: Figure[] = []
   public config: GameConfig
 
   constructor(
@@ -37,6 +71,7 @@ export class Game {
     config: Partial<GameConfig> = {},
   ) {
     this.config = { ...defaultGameConfig, ...config }
+    this.reset({ board: false })
   }
 
   public on(name: keyof Events, callback: (...arg: unknown[]) => void): void {
@@ -103,14 +138,14 @@ export class Game {
     return this.board.cells[0].some((cell) => cell.occupied)
   }
 
-  public reset(): void {
-    this.board = new Board(this.board.height, this.board.width)
+  public reset({ board }: { board: boolean } = { board: true }): void {
+    if (board) {
+      this.board = new Board(this.board.height, this.board.width)
+    }
     this.figure = null
     this.nextFigures = []
-    this.score = 0
-    this.clockPeriod = INITIAL_CLOCK_PERIOD
-    this.pause()
-    this.resume()
+    this.score = this.config.initialScore
+    this.clockPeriod = this.config.initialGameClockPeriod
   }
 
   public tick() {
@@ -125,7 +160,7 @@ export class Game {
     if (fixed) {
       let completedLines = this.removeCompletedLines()
       if (completedLines > 0) {
-        const scores = [10, 25, 45, 70]
+        const scores = this.config.multipleLineScoreMultiplier
         this.score += scores[completedLines - 1]
       }
     }
@@ -140,10 +175,15 @@ export class Game {
       (this.figure === null ? 1 : 0)
     if (numberOfFiguresToAdd > 0) {
       for (let i = 0; i < numberOfFiguresToAdd; i++) {
+        const randomizedPositionX =
+          this.config.newFigurePaddingX +
+          ((Math.random() *
+            (this.board.cells[0].length - this.config.newFigurePaddingX * 2)) |
+            0)
         this.nextFigures.push(
           new Figure({
-            x: 3 + ((Math.random() * (this.board.cells[0].length - 7)) | 0),
-            y: 0,
+            x: randomizedPositionX,
+            y: this.config.newFigurePaddingTop,
           }),
         )
       }
@@ -165,7 +205,7 @@ export class Game {
     if (!collides) {
       this.figure.move(direction)
       if (direction === 'down' && !isGravity) {
-        this.score += 1
+        this.score += this.config.moveDownScorePoints
       }
     }
     return !collides
@@ -194,12 +234,15 @@ export class Game {
   }
 
   public resume() {
-    let lastLevel = (this.score / 100) | 0
+    let lastLevel = (this.score / this.config.scoreLevelStep) | 0
     this.clock = setInterval(() => {
       this.tick()
-      const currentLevel = (this.score / 100) | 0
+      const currentLevel = (this.score / this.config.scoreLevelStep) | 0
       if (currentLevel > lastLevel) {
-        this.clockPeriod = Math.max(this.clockPeriod - 50, 100)
+        this.clockPeriod = Math.max(
+          this.clockPeriod - this.config.levelGameClockStep,
+          this.config.minimumGameClockPeriod,
+        )
         this.pause()
         this.resume()
       }
@@ -210,7 +253,7 @@ export class Game {
   public start() {
     setInterval(() => {
       this.render(this)
-    }, 10)
+    }, this.config.renderClockPeriod)
 
     this.resume()
   }

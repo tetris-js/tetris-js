@@ -43,8 +43,8 @@ export const shapeL = new Shape('L', [
   [1, 1],
 ])
 
+export const shapes = [shapeT, shapeI, shapeS, shapeZ, shapeO, shapeJ, shapeL]
 export const getRandomShape = (): Shape => {
-  const shapes = [shapeT, shapeI, shapeS, shapeZ, shapeO, shapeJ, shapeL]
   return shapes[Math.floor(Math.random() * shapes.length)]
 }
 
