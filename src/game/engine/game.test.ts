@@ -9,6 +9,12 @@ const getBoardRepresentation = (board: { cells: Board['cells'] }) =>
     .map((row) => row.map((cell) => (cell.occupied ? 'x' : '_')).join(''))
     .join('\n')
 
+function runTicks(game: Game, number: number) {
+  for (let i = 0; i < number; i++) {
+    game.tick()
+  }
+}
+
 describe('Game', () => {
   describe('addNewFigure', () => {
     it('should add a new figure', () => {
@@ -302,17 +308,47 @@ describe('Game', () => {
   describe('event', () => {
     describe('completedLines', () => {
       describe('when lines are completed', () => {
-        it('should be called', () => {})
+        it('should be called', () => {
+          const board = new Board(10, 10)
+          board.cells[9].forEach((cell) => (cell.occupied = true))
+          const game = new Game(board, renderNothing)
+          const onCompletedLines = vi.fn()
+          game.on('completedLines', onCompletedLines)
+          game.figure = new Figure({ x: 3, y: 0 })
+          runTicks(game, 15)
+          expect(onCompletedLines).toHaveBeenCalledWith({ count: 1 })
+        })
       })
     })
     describe('lose', () => {
       describe('when the game lis lost', () => {
-        it('should be called', () => {})
+        it('should be called', () => {
+          const board = new Board(10, 10)
+          const game = new Game(board, renderNothing)
+          const onLose = vi.fn()
+          game.on('lose', onLose)
+          runTicks(game, 100)
+          expect(onLose).toHaveBeenCalled()
+        })
       })
     })
     describe('tick', () => {
       describe('when a game tick runs', () => {
-        it('should be called', () => {})
+        it('should be called', () => {
+          const board = new Board(10, 10)
+          const game = new Game(board, renderNothing)
+          const onTick = vi.fn()
+          game.on('tick', onTick)
+          expect(onTick).toHaveBeenCalledTimes(0)
+          game.tick()
+          expect(onTick).toHaveBeenCalledTimes(1)
+          game.tick()
+          expect(onTick).toHaveBeenCalledTimes(2)
+          game.tick()
+          expect(onTick).toHaveBeenCalledTimes(3)
+          game.tick()
+          expect(onTick).toHaveBeenCalledTimes(4)
+        })
       })
     })
   })
